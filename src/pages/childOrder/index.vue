@@ -1,13 +1,13 @@
 <template>
   <view class="content">
-    <image class="logo" src="/static/image/bg02.png"></image>
-    <view class="wrap">
+    <image class="logo" src="/static/image/bg02.png" v-if="column.length>0"></image>
+    <view class="wrap" v-if="column.length>0">
       <view class="container" v-for="(item,index) in column " :key="index">
         <view class="column">
           <view class="clear-fix title-column">
             <view class="title">{{item.name}}</view>
             <view class="age">{{item.age}}</view>
-            <view class="status" :class="{'isCheck':!item.status}">{{item.status?'未检':"已检"}}</view>
+            <view class="status" :class="item.status==='0'?'':item.status==='1'?'icCheck':'overTime'">{{item.status==='0'?'未检':item.status==='1'?'已检':'过期' }}</view>
           </view>
           <view class="item-column clear-fix">
             <view class="item">{{item.item}}</view>
@@ -69,65 +69,52 @@
         </view>
       </view>
     </view>
+    <view v-else>
+      <Empty />
+    </view>
   </view>
 </template>
 <script>
+import { getChildBookInfo } from '@/api/main'
+import { getAge } from '@/utils/nav'
+import Empty from '@/pages/components/empty'
 export default {
+  components: {
+    Empty,
+  },
+  mounted() {
+    this.getDetail();
+  },
   data() {
     return {
-      column: [{
-        'address': "江苏省泰州市靖江市景城街道办团结路",
-        'contact': "李天",
-        "tel": "18874287780",
-        'code': "221321312",
-        'birth': "2021-07-30",
-        'status': 1,
-        'mom': "章悦",
-        'item': "一岁内体检",
-        'dad': "李天",
-        'time': "2021-11-10",
-        'age': "6月20天",
-        "name": "李小璐"
-      }, {
-        'address': "江苏省泰州市靖江市景城街道办团结路",
-        'contact': "李天",
-        "tel": "18874287780",
-        'code': "221321312",
-        'birth': "2021-07-30",
-        'status': 1,
-        'mom': "章悦",
-        'item': "一岁内体检",
-        'dad': "李天",
-        'time': "2021-11-10",
-        'age': "6月20天",
-        "name": "李小璐"
-      }, {
-        'address': "江苏省泰州市靖江市景城街道办团结路",
-        'contact': "李天",
-        "tes": "18874287780",
-        'code': "221321312",
-        'birth': "2021-07-30",
-        'status': 0,
-        'mom': "章悦",
-        'item': "一岁内体检",
-        'dad': "李天",
-        'time': "2021-11-10",
-        'age': "6月20天",
-        "name": "李小璐"
-      }, {
-        'address': "江苏省泰州市靖江市景城街道办团结路",
-        'contact': "李天",
-        "tes": "18874287780",
-        'code': "221321312",
-        'birth': "2021-07-30",
-        'status': 1,
-        'mom': "章悦",
-        'item': "一岁内体检",
-        'dad': "李天",
-        'time': "2021-11-10",
-        'age': "6月20天",
-        "name": "李小璐"
-      }]
+      column: []
+    }
+  },
+  methods: {
+    getDetail() {
+      getChildBookInfo({
+        schoolId: uni.getStorageSync('schoolId')
+        // schoolId: 26
+      }).then(res => {
+        if (!res.code) {
+          this.column = res.result.map(item => {
+            return {
+              'address': item.xzaddr,
+              'contact': item.fathermobile ? item.fathername : item.mothermobile ? item.mothername : "",
+              "tel": item.fathermobile || item.mothermobile,
+              'code': item.childhealthno,
+              'birth': item.childbirthday.split(" ")[0],
+              'status': item.checkstatus,
+              'mom': item.mothername,
+              'item': item.checkitem,
+              'dad': item.fathername,
+              'time': item.resdate.split(" ")[0],
+              'age': getAge(item.childbirthday.split(" ")[0]),
+              "name": item.childname
+            }
+          })
+        }
+      })
     }
   },
 }
@@ -183,6 +170,10 @@ export default {
         &.isCheck {
           color: #1fa63b;
           background: #def2e2;
+        }
+        &.overTime {
+          color: #666;
+          background: #dadada;
         }
       }
     }

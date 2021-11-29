@@ -11,7 +11,7 @@
           <text>{{jgyjs.title}}</text>
         </view>
       </view>
-      <ItemColumn :columns='jgyjs' />
+      <ItemColumn :columns='jgyjs' :type="type" />
     </view>
   </view>
 </template>
@@ -24,7 +24,8 @@ export default {
   },
   data() {
     return {
-      jgyjs
+      jgyjs,
+      type: 2
     }
   }
 }

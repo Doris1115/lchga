@@ -10,7 +10,6 @@ import {
 let request = {}
 request.globalRequest = (url, data = {}, method = 'get') => {
 	let baseurl = baseUrl;
-	console.log('test', baseurl);
 	let token = uni.getStorageSync('token');
 	let headers = {}
 

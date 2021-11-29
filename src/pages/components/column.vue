@@ -6,19 +6,21 @@
     <view class="uni-flex uni-row " style=" flex-wrap:wrap">
       <view class="column-item" v-for="(item,index) in columns.column" :key="index">
         <view>
-          <view v-if="item.url&&!!isTeacher" @click="navigatorTag(item.url)" class="navigator-icon" hover-class="navigator-hover">
+          <view v-if="item.url" @click="navigatorTag(item.url,item.icontype)" class="navigator-icon" hover-class="navigator-hover">
             <image :src="item.icon" mode="aspectFit"> </image>
           </view>
-          <uni-link v-else-if="item.addurl&&!!isTeacher" :href="item.addurl" class="navigator-icon" hover-class="navigator-hover">
+          <uni-link v-else-if="item.addurl&&item.icontype.indexOf('ruyjs')>-1" :href="item.addurl+'&openid='+openid" class="navigator-icon" hover-class="navigator-hover">
             <image :src="item.icon" mode="aspectFit"> </image>
           </uni-link>
-          <view v-else-if="!isTeacher" class="navigator-icon" @click="messageToggle('error',textError)">
+          <uni-link v-else-if="item.addurl&&item.icontype.indexOf('zayjs')>-1&&!!isTeacher" :href="item.addurl+'&openid='+openid" class="navigator-icon" hover-class="navigator-hover">
+            <image :src="item.icon" mode="aspectFit"> </image>
+          </uni-link>
+          <uni-link v-else-if="item.addurl&&item.icontype.indexOf('jgyjs')>-1&&isDoc" :href="item.addurl+'&openid='+openid" class="navigator-icon" hover-class="navigator-hover">
+            <image :src="item.icon" mode="aspectFit"> </image>
+          </uni-link>
+          <view v-else class="navigator-icon" @click="messageToggle('error',item.title,item.icontype)">
             <image :src="item.icon" mode="aspectFit"> </image>
           </view>
-          <view v-else class="navigator-icon" @click="messageToggle('warn',item.title,true)">
-            <image :src="item.icon" mode="aspectFit"> </image>
-          </view>
-          <!-- <text>{{item.url?item.url:'/pages/webView/index?title='+item.title+'&addurl='+item.addurl}}</text> -->
           <text>{{item.title}}</text>
         </view>
       </view>
@@ -32,6 +34,8 @@
   </view>
 </template>
 <script>
+import { navigateToRegist, getQueryString } from '@/utils/nav'
+import { wxuserByOpenId, getSchoolId } from '@/api/main'
 export default {
   props: {
     columns: {
@@ -40,11 +44,23 @@ export default {
         return {}
       }
     },
+    type: {
+      default() {
+        return 1
+      }
+    },
+    isTeacher: {
+      default() {
+        return ''
+      }
+    }
   },
   computed: {
-    isTeacher() {
-      return uni.getStorageSync('cardId');
-
+    openid() {
+      return uni.getStorageSync('openid');
+    },
+    isDoc() {
+      return this.type == '2' ? true : false;
     }
   },
   data() {
@@ -55,20 +71,35 @@ export default {
     }
   },
   methods: {
-    messageToggle(type, title, status) {
+    messageToggle(type, title, role) {
       this.msgType = type
-      this.messageText = status ? `${title}功能正在开发中...` : title;
+      this.messageText = title;
+      if (role.indexOf('zayjs') > -1) {
+        this.messageText = "没找查到老师信息，无法进入页面";
+        navigateToRegist();
+      } else {
+        this.messageText = "没找查到医生信息，无法进入页面";
+
+      }
       this.$refs.message.open()
     },
-    navigatorTag(url) {
-      if (url.indexOf('ztyjs') > 0) {
-        if (!!this.cardId) {
+    navigatorTag(url, type) {
+      if (type.indexOf('zayjs') > -1) {
+        if (!!this.isTeacher) {
+          this.navigatorToZY(!!this.isTeacher, url)
+        } else {
+          this.getCardId(url).then(res => {
+            this.navigatorToZY(!!res, url)
+          })
+        }
+      } else if (type.indexOf('jgyjs') > -1) {
+        if (this.type == '2') {
           uni.navigateTo({
             url: url
           })
         } else {
           this.msgType = 'error'
-          this.messageText = '没找查到老师信息，无法进入页面'
+          this.messageText = '没找查到医生信息，无法进入页面'
           this.$refs.message.open()
         }
       } else {
@@ -77,6 +108,48 @@ export default {
         })
 
       }
+    },
+    navigatorToZY(isTeacher, url) {
+      if (isTeacher) {
+        uni.navigateTo({
+          url: url
+        })
+      } else {
+        this.msgType = 'error'
+        this.messageText = '没找查到老师信息，无法进入页面'
+        this.$refs.message.open()
+        navigateToRegist();
+      }
+    },
+    getCardId(url) {
+      let wxInfo = JSON.parse(getQueryString('wxuser') || '{}') || {}
+      let openid = wxInfo.openid
+      let unionid = wxInfo.unionid
+      return wxuserByOpenId({
+        openid: openid,
+        unionid: unionid
+      }).then(res => {
+        if (res.result.total == 1 && res.result.records[0].bindteachid != null && res.result.records[0].bindteachid != "") {
+          cardId = JSON.stringify(res.result.records[0].bindteachid);
+          this.$emit("setCardId", cardId)
+        } else {
+          this.navigatorToZY(false, url);
+        }
+        return res.result.records[0].bindteachid
+      }).then(res => {
+        this.getSchoolIdByCardId(res)
+        return res;
+      })
+    },
+    getSchoolIdByCardId(cardId) {
+      getSchoolId({
+        cardId
+      }).then(res => {
+        if (!res.code) {
+          this.schoolId = res.result[0].schoolId
+          uni.setStorageSync('schoolId', this.schoolId);
+        }
+      })
     }
   },
 }

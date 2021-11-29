@@ -6,7 +6,6 @@
         <view class="uni-flex uni-row">
           <view class="flex-item" v-for="(item,index) in navBar" :key="index">
             <view>
-              <!-- <navigator :url="item.url" class="navigator-icon"> -->
               <view @click="navigatorTag(item.url)" class="navigator-icon">
                 <image :src="item.icon"> </image>
               </view>
@@ -17,20 +16,19 @@
       </view>
       <view class="toggel-role clear-fix">
         <view class="pull-left clear-fix">
-          <text v-if="type!==2" class="pull-left">我的身份是家长</text>
-          <text v-else class="pull-left">我的身份是医生</text>
-          <image v-if="type!==2" class="icon pull-left" src="/static/image/iconPar.png" mode="scaleToFill"></image>
-          <image v-else class="icon pull-left" src="/static/image/iconDoc.png" mode="scaleToFill"></image>
+          <text v-if="type==2" class="pull-left">我的身份是医生</text>
+          <text v-else class="pull-left">我的身份是家长</text>
+          <image v-if="type==2" class="icon pull-left" src="/static/image/iconDoc.png" mode="scaleToFill"></image>
+          <image v-else class="icon pull-left" src="/static/image/iconPar.png" mode="scaleToFill"></image>
         </view>
         <view class="pull-right" @click="toggleRole">
-          <text v-if="type!==2">切换到医生</text>
-          <text v-else>切换到家长</text>
-          <!-- <text>id:{{id}}</text> -->
+          <text v-if="type==2">切换到家长</text>
+          <text v-else>切换到医生</text>
         </view>
       </view>
       <view class="nav-layer">
         <view class="nav-column" v-for="(column,index) in navLayer" :key="index">
-          <ItemColumn :columns='column' />
+          <ItemColumn :columns='column' :type="type" :isTeacher="cardId" @setCardId="setCardId" />
         </view>
       </view>
 
@@ -45,9 +43,10 @@
 </template>
 
 <script>
-import { ruyjs, zayjs, jgyjs, getQueryString } from '@/utils/nav'
+import { ruyjs, zayjs, jgyjs, getQueryString, navigateToRegist } from '@/utils/nav'
 import ItemColumn from '@/pages/components/column'
-import { getUserType, toggleUserType, wxuserByOpenId } from '@/api/main'
+import { getUserType, toggleUserType, wxuserByOpenId, getSchoolId } from '@/api/main'
+
 export default {
   components: {
     ItemColumn
@@ -70,13 +69,17 @@ export default {
       }],
       navLayer: [ruyjs, zayjs, jgyjs],
       id: '',
-      type: 2,
+      type: 1,
       unionid: "",
       msgType: 'success',
       messageText: "切换成功",
       cardId: '',
-      registerUrl: ''
+      registerUrl: '',
+      schoolId: ''
     }
+  },
+  onPullDownRefresh() {
+    this.getUserOpenId()
   },
   onLoad() {
     this.getOpenId();
@@ -88,7 +91,6 @@ export default {
       this.unionid = wxInfo.unionid
       uni.setStorageSync('openid', openid);
       uni.setStorageSync('wxInfo', getQueryString('wxuser'));
-
       this.id = openid;
       this.getRoleType();
       this.getUserOpenId()
@@ -97,7 +99,12 @@ export default {
       getUserType({
         openid: this.id
       }).then(res => {
-        this.type = res.usertype ? res.usertype : 1;
+        this.type = res.usertype
+      }).catch((err) => {
+        this.msgType = 'error'
+        this.messageText = '没有找到注册信息，请前往母子手册注册'
+        this.$refs.message.open()
+        window.location.href = 'http://wx.fybj365.com/wxoauth/redirect?thirdurl=http://wx.fybj365.com/weixin/chiTrasfer'
       })
     },
     toggleRole() {
@@ -108,7 +115,9 @@ export default {
       }).then(res => {
         if (res.flage) {
           this.type = type;
+          this.msgType = 'success';
           this.messageText = '切换成功'
+          uni.setStorageSync('type', type);
           this.$refs.message.open()
         } else {
           this.msgType = 'error'
@@ -118,38 +127,74 @@ export default {
       })
     },
     getUserOpenId() {
-      wxuserByOpenId({
+      return wxuserByOpenId({
         openid: this.id,
         unionid: this.unionid
       }).then(res => {
-        console.log('res', res);
         if (res.result.total == 1 && res.result.records[0].bindteachid != null && res.result.records[0].bindteachid != "") {
-          this.cardId = res.result.records[0].bindteachid;
+          this.cardId = JSON.stringify(res.result.records[0].bindteachid);
           uni.setStorageSync('cardId', this.cardId);
+          uni.stopPullDownRefresh();
         } else {
           this.cardId = '';
           this.registerUrl = "http://wfw.fybj365.com/kidsorginfo/kt_regist.html?wxuser=" + uni.getStorageSync('wxInfo');
         }
-        // uni.setStorageSync('cardId', '332601195409264723');
+        return res.result.records[0].bindteachid
+      }).then(res => {
+        this.getSchoolIdByCardId(res)
+        return res;
       })
     },
     navigatorTag(url) {
       if (url.indexOf('ztyjs') > 0) {
         if (!!this.cardId) {
+          this.navigatorToZY(!!this.cardId, url)
+        } else {
+          this.getUserOpenId().then(res => {
+            this.navigatorToZY(!!res, url)
+          })
+        }
+      } else if (url.indexOf('jgyjs') > 0) {
+        if (this.type == '2') {
           uni.navigateTo({
             url: url
           })
         } else {
           this.msgType = 'error'
-          this.messageText = '没找查到老师信息，无法进入页面'
+          this.messageText = '没找查到医生信息，无法进入页面'
           this.$refs.message.open()
         }
       } else {
         uni.navigateTo({
           url
         })
-
       }
+    },
+    navigatorToZY(isTeacher, url) {
+      if (isTeacher) {
+        uni.navigateTo({
+          url: url
+        })
+      } else {
+        this.msgType = 'error'
+        this.messageText = '没找查到老师信息，无法进入页面'
+        this.$refs.message.open()
+        navigateToRegist();
+      }
+    },
+    getSchoolIdByCardId(cardId) {
+      getSchoolId({
+        cardId
+      }).then(res => {
+        if (!res.code) {
+          this.schoolId = res.result[0].schoolId
+          uni.setStorageSync('schoolId', this.schoolId);
+        }
+      })
+    },
+    setCardId(val) {
+      this.cardId = val;
+      uni.setStorageSync('cardId', this.cardId);
     }
   }
 }

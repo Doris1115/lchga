@@ -11,7 +11,7 @@
           <text>{{zayjs.title}}</text>
         </view>
       </view>
-      <ItemColumn :columns='zayjs' />
+      <ItemColumn :columns='zayjs' :isTeacher="type" />
     </view>
   </view>
 </template>
@@ -24,7 +24,8 @@ export default {
   },
   data() {
     return {
-      zayjs
+      zayjs,
+      type: 2
     }
   }
 }

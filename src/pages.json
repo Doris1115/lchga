@@ -10,7 +10,8 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "数字托育"
+				"navigationBarTitleText": "数字托育",
+				"enablePullDownRefresh": true
                 // "navigationStyle": "custom"
 			}
 		},{
