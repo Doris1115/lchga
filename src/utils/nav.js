@@ -111,7 +111,6 @@ function getDay(date) {
 }
 export function navigateToRegist() {
     setTimeout(() => {
-        let wxuser = encodeURIComponent(uni.getStorageSync('wxInfo'))
-        window.location.href = "http://wfw.fybj365.com/kidsteacher/kt_regist.html?wxuser=" + wxuser;
+        window.location.href = "http://wx.fybj365.com/wxoauth/redirect?thirdurl=http://wfw.fybj365.com/kidsteacher/";
     }, 2000);
 }

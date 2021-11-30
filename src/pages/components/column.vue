@@ -88,9 +88,12 @@ export default {
         if (!!this.isTeacher) {
           this.navigatorToZY(!!this.isTeacher, url)
         } else {
-          this.getCardId(url).then(res => {
+          this.getCardId().then(res => {
+            if (!!res) {
+              this.getSchoolIdByCardId(res)
+            }
             this.navigatorToZY(!!res, url)
-          })
+          });
         }
       } else if (type.indexOf('jgyjs') > -1) {
         if (this.type == '2') {
@@ -110,7 +113,7 @@ export default {
       }
     },
     navigatorToZY(isTeacher, url) {
-      if (isTeacher) {
+      if (!!isTeacher) {
         uni.navigateTo({
           url: url
         })
@@ -129,16 +132,14 @@ export default {
         openid: openid,
         unionid: unionid
       }).then(res => {
+        let cardId = ''
         if (res.result.total == 1 && res.result.records[0].bindteachid != null && res.result.records[0].bindteachid != "") {
-          cardId = JSON.stringify(res.result.records[0].bindteachid);
+          cardId = res.result.records[0].bindteachid;
           this.$emit("setCardId", cardId)
         } else {
           this.navigatorToZY(false, url);
         }
-        return res.result.records[0].bindteachid
-      }).then(res => {
-        this.getSchoolIdByCardId(res)
-        return res;
+        return cardId
       })
     },
     getSchoolIdByCardId(cardId) {

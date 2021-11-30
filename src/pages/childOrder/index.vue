@@ -92,9 +92,12 @@ export default {
   },
   methods: {
     getDetail() {
+      uni.showLoading({
+        title: '加载中',
+        mask: true
+      });
       getChildBookInfo({
         schoolId: uni.getStorageSync('schoolId')
-        // schoolId: 26
       }).then(res => {
         if (!res.code) {
           this.column = res.result.map(item => {
@@ -114,6 +117,7 @@ export default {
             }
           })
         }
+        uni.hideLoading();
       })
     }
   },

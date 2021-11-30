@@ -79,7 +79,7 @@ export default {
     }
   },
   onPullDownRefresh() {
-    this.getUserOpenId()
+    this.getCardCodeAndSchoolId()
   },
   onLoad() {
     this.getOpenId();
@@ -93,7 +93,7 @@ export default {
       uni.setStorageSync('wxInfo', getQueryString('wxuser'));
       this.id = openid;
       this.getRoleType();
-      this.getUserOpenId()
+      this.getCardCodeAndSchoolId()
     },
     getRoleType() {
       getUserType({
@@ -131,19 +131,25 @@ export default {
         openid: this.id,
         unionid: this.unionid
       }).then(res => {
+        let cardId = ''
         if (res.result.total == 1 && res.result.records[0].bindteachid != null && res.result.records[0].bindteachid != "") {
-          this.cardId = JSON.stringify(res.result.records[0].bindteachid);
+          this.cardId = res.result.records[0].bindteachid;
+          cardId = res.result.records[0].bindteachid;
           uni.setStorageSync('cardId', this.cardId);
-          uni.stopPullDownRefresh();
         } else {
           this.cardId = '';
           this.registerUrl = "http://wfw.fybj365.com/kidsorginfo/kt_regist.html?wxuser=" + uni.getStorageSync('wxInfo');
         }
-        return res.result.records[0].bindteachid
-      }).then(res => {
-        this.getSchoolIdByCardId(res)
-        return res;
+        uni.stopPullDownRefresh();
+        return cardId
       })
+    },
+    getCardCodeAndSchoolId() {
+      this.getUserOpenId().then(res => {
+        if (!!res) {
+          this.getSchoolIdByCardId(res)
+        }
+      });
     },
     navigatorTag(url) {
       if (url.indexOf('ztyjs') > 0) {
@@ -171,7 +177,7 @@ export default {
       }
     },
     navigatorToZY(isTeacher, url) {
-      if (isTeacher) {
+      if (!!isTeacher) {
         uni.navigateTo({
           url: url
         })
