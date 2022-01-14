@@ -82,7 +82,7 @@ export default {
     this.getCardCodeAndSchoolId()
   },
   onLoad() {
-    this.getOpenId();
+    // this.getOpenId();
   },
   methods: {
     getOpenId() {
@@ -96,8 +96,10 @@ export default {
       this.getCardCodeAndSchoolId()
     },
     getRoleType() {
+      let openid = this.id ? this.id : uni.getStorageSync("openid");
+      debugger
       getUserType({
-        openid: this.id
+        openid
       }).then(res => {
         this.type = res.usertype
       }).catch((err) => {
@@ -109,8 +111,9 @@ export default {
     },
     toggleRole() {
       let type = this.type == 1 ? 2 : 1;
+      let openid = this.id || uni.getStorageSync("openid")
       toggleUserType({
-        openid: this.id,
+        openid,
         usertype: type
       }).then(res => {
         if (res.flage) {
@@ -127,8 +130,10 @@ export default {
       })
     },
     getUserOpenId() {
+      let openid = this.id || uni.getStorageSync("openid")
+
       return wxuserByOpenId({
-        openid: this.id,
+        openid,
         unionid: this.unionid
       }).then(res => {
         let cardId = ''

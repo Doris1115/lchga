@@ -8,6 +8,14 @@
     },
 	"pages": [ 
 		{
+			"path": "pages/mzjkHome/index",
+			"style": {
+				"navigationBarTitleText": "母子健康",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "数字托育",
@@ -46,6 +54,76 @@
 			"style": {
 				"navigationBarTitleText": "社会评价"
 			}
+		},{
+			"path": "pages/info/index",
+			"style": {
+				"navigationBarTitleText": "母子健康",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/baseInfo",
+			"style": {
+				"navigationBarTitleText": "基本信息",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/teachInfo",
+			"style": {
+				"navigationBarTitleText": "教师信息",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/docInfo",
+			"style": {
+				"navigationBarTitleText": "医生信息",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/babyInfo",
+			"style": {
+				"navigationBarTitleText": "宝宝档案",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/addBaby",
+			"style": {//增加宝宝
+				"navigationBarTitleText": "宝宝信息",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/info/babyInfoItem",
+			"style": {//单独宝宝信息
+				"navigationBarTitleText": "宝宝信息",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/healthyBoth/index",
+			"style": {
+				"navigationBarTitleText": "母子健康",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/DoctorAss/index",
+			"style": {
+				"navigationBarTitleText": "医生助手",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
+		},{
+			"path": "pages/createFile/index",
+			"style": {
+				"navigationBarTitleText": "自助建档",
+				"enablePullDownRefresh": true
+                // "navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
@@ -58,5 +136,32 @@
             "navigationBarTextStyle": "black",
             "navigationBarBackgroundColor": "#FFFFFF"
         }
-	}
+	},
+	"tabBar": {
+        "color": "#7A7E83",
+        "selectedColor": "#0d90ff",
+        "borderStyle": "black",
+        "backgroundColor": "#ffffff",
+        "height": "50px",
+        "fontSize": "10px",
+        "iconWidth": "24px",
+        "spacing": "3px",
+        "list": [{
+            "pagePath": "pages/mzjkHome/index",
+            "iconPath": "static/icons/homeHL.png",
+            "selectedIconPath": "static/icons/home.png",
+            "text": "首页"
+        }, {
+            "pagePath": "pages/index/index",
+			"iconPath": "static/icons/sztyHL.png",
+            "selectedIconPath": "static/icons/szty.png",
+            "text": "数字托育"
+        }, {
+            "pagePath": "pages/info/index",
+			"iconPath": "static/icons/userHL.png",
+            "selectedIconPath": "static/icons/user.png",
+            "text": "我的"
+        }]
+    }
+
 }

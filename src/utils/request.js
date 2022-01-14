@@ -48,15 +48,47 @@ request.globalRequest = (url, data = {}, method = 'get') => {
 }
 request.globalPostRequest = (url, data = {}) => {
 	let token = uni.getStorageSync('token');
+	let baseurl = baseUrl;
 	let headers = {}
 
+	if (token) {
+		headers['Authorization'] = token
+	}
+	// headers['content-type'] = 'application/x-www-form-urlencoded'
+	headers['content-type'] = 'application/json'
+	return new Promise((resolve, reject) => {
+		uni.request({
+			url: url.indexOf('http') > -1 ? url : baseurl + url,
+			method: 'POST',
+			data: data,
+			dataType: 'json',
+			header: headers,
+			success: (res) => {
+				resolve(res.data)
+			},
+			fail: (err) => {
+				uni.showToast({
+					icon: 'none',
+					title: '请求失败',
+					duration: 1000
+				});
+				reject(err)
+			}
+		})
+	})
+}
+
+request.globalPost = (url, data = {}) => {
+	let token = uni.getStorageSync('token');
+	let headers = {}
+	let baseurl = baseUrl;
 	if (token) {
 		headers['Authorization'] = token
 	}
 	headers['content-type'] = 'application/x-www-form-urlencoded'
 	return new Promise((resolve, reject) => {
 		uni.request({
-			url: baseUrl + url,
+			url: url.indexOf('http') > -1 ? url : baseurl + url,
 			method: 'POST',
 			data: data,
 			dataType: 'json',

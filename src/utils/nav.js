@@ -80,6 +80,27 @@ export const jgyjs = {
         title: "考勤监督"
     }]
 }
+export const mzjkNavIcons = [{
+    title: "母子健康",
+    images: "/static/icons/icon_home_zzjk.png",
+    url: "/pages/healthyBoth/index",
+    text: "mzjk"
+}, {
+    title: "医生助手",
+    images: "/static/icons/icon_home_yszs.png",
+    url: "/pages/DoctorAss/index",
+    text: "yszs"
+}, {
+    title: "母婴学堂",
+    images: "/static/icons/icon_home_mykt.png",
+    url: "https://appuv0dgrco8427.h5.xiaoeknow.com/homepage/10",
+    text: "myxt"
+}, {
+    title: "孕育百科",
+    images: "/static/icons/icon_home_yybk.png",
+    url: "",
+    text: "yybk"
+}]
 export function getQueryString(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ""])[1].replace(/\+/g, '%20')) || null
 }
@@ -109,8 +130,32 @@ function getMonth(date) {
 function getDay(date) {
     return new Date(date).getDate()
 }
+
+
 export function navigateToRegist() {
     setTimeout(() => {
         window.location.href = "http://wx.fybj365.com/wxoauth/redirect?thirdurl=http://wfw.fybj365.com/kidsteacher/";
     }, 2000);
+}
+//验证手机号码
+export function validatePhone(number) {
+    return /^(\d3,4|\d{3,4}-|\s)?\d{7,14}$/.test(number);
+}
+//验证身份证
+export function validateId(number) {
+    return /(^\d{15}$)|(^\d{17}([0-9]|X)$)/i.test(number);
+}
+//判断验证是否符合要求，合法性校验
+export function validate(key) {
+    let bool = true;
+    if (!this.rules[key].rule.test(this[key])) {
+        //提示信息
+        uni.showToast({
+            title: this.rules[key].msg,
+        })
+        //取反
+        bool = false;
+        return false;
+    }
+    return bool;
 }
