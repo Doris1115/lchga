@@ -2,52 +2,71 @@
   <view class="wrap">
     <view class="head_info clear-fix">
       <view class="pull-left image_cxt">
-        <image :src="imageUrl" mode="scaleToFill"></image>
+        <image
+          :src="imageUrl"
+          mode="scaleToFill"
+        ></image>
       </view>
       <view class="pull-left">
         <h1>{{name}}</h1>
         <p>
-          <span v-for="role in types" :key="role">{{roles[role]}}{{role!==2?"&nbsp;|&nbsp;":""}}</span>
+          <span>{{phone}}</span>
         </p>
       </view>
     </view>
     <view class="column">
       <uni-list>
-        <uni-list-item v-for="(item,index) in coulums" :key="index" :title="item.title" :to="item.url" link>
+        <uni-list-item
+          v-for="(item,index) in coulums"
+          :key="index"
+          :title="item.title"
+          :to="item.url"
+          link
+        >
           <!-- 自定义 header -->
-          <view slot="header" class="slot-box">
-            <image class="slot-image" :src="item.icon" mode="widthFix"></image>
+          <view
+            slot="header"
+            class="slot-box"
+          >
+            <image
+              class="slot-image"
+              :src="item.icon"
+              mode="widthFix"
+            ></image>
           </view>
         </uni-list-item>
       </uni-list>
+    </view>
+    <view class="login-out">
+      <button
+        type="primary"
+        class="submit_btn"
+        @click="addChild"
+      >退出登录</button>
     </view>
   </view>
 </template>
 <script>
 export default {
-  data() {
+  data () {
     return {
       imageUrl: '/static/icons/touxiang.png',
       name: "姚慧",
       types: [0, 1, 2],
-      roles: ['家长', '教师', '医生'],
+      phone: '13317330328',
       coulums: [{
-        title: "基本信息",
-        icon: "/static/icons/icon_home_wdxx.png",
+        title: "我的资料",
+        icon: "/static/icons/wdxx.png",
         url: "/pages/info/baseInfo"
       }, {
-        title: "教师信息",
-        icon: "/static/icons/iconPar.png",
-        url: "/pages/info/teachInfo"
+        title: "我的档案",
+        icon: "/static/icons/lchgaHL.png",
+        url: "/pages/info/baseInfo"
       }, {
-        title: "医生信息",
-        icon: "/static/icons/iconDoc.png",
-        url: "/pages/info/docInfo"
-      }, {
-        title: "宝宝档案",
-        icon: "/static/icons/icon_home_bbda.png",
-        url: "/pages/info/babyInfo"
-      }]
+        title: "随访列表",
+        icon: "/static/icons/sflb.png",
+        url: "/pages/sfList/index"
+      },]
     }
   },
 }
@@ -95,5 +114,12 @@ export default {
 ::v-deep .uni-list-item__content-title {
   font-size: 30rpx;
   line-height: 1em;
+}
+.submit_btn {
+  background: #fff;
+  color: #dadada;
+  border: 1px solid #dadada !important;
+  margin: 60rpx $uni-spacing-row-lg 0 $uni-spacing-row-lg;
+  border-radius: 60rpx;
 }
 </style>

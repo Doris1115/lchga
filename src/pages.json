@@ -1,167 +1,136 @@
 {
-	"easycom": {
-        "autoscan": true,
-        "custom": {
-            // uni-ui 规则如下配置
-            "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
-        }
-    },
-	"pages": [ 
-		{
-			"path": "pages/mzjkHome/index",
-			"style": {
-				"navigationBarTitleText": "母子健康",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "数字托育",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/ruyjs/index",
-			"style": {
-				"navigationBarTitleText": "入托一件事"
-			}
-		},{
-			"path": "pages/ztyjs/index",
-			"style": {
-				"navigationBarTitleText": "在托一件事"
-			}
-		},{
-			"path": "pages/jgyjs/index",
-			"style": {
-				"navigationBarTitleText": "监管一件事"
-			}
-		},{
-			"path": "pages/childOrder/index",
-			"style": {
-				"navigationBarTitleText": "儿童预约"
-			}
-		},{
-			"path": "pages/webView/index",
-			"style": {
-				"navigationBarTitleText": "数字托育"
-                // "navigationStyle": "custom"
-
-			}
-		},{
-			"path": "pages/evaluation/index",
-			"style": {
-				"navigationBarTitleText": "社会评价"
-			}
-		},{
-			"path": "pages/info/index",
-			"style": {
-				"navigationBarTitleText": "母子健康",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/baseInfo",
-			"style": {
-				"navigationBarTitleText": "基本信息",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/teachInfo",
-			"style": {
-				"navigationBarTitleText": "教师信息",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/docInfo",
-			"style": {
-				"navigationBarTitleText": "医生信息",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/babyInfo",
-			"style": {
-				"navigationBarTitleText": "宝宝档案",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/addBaby",
-			"style": {//增加宝宝
-				"navigationBarTitleText": "宝宝信息",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/info/babyInfoItem",
-			"style": {//单独宝宝信息
-				"navigationBarTitleText": "宝宝信息",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/healthyBoth/index",
-			"style": {
-				"navigationBarTitleText": "母子健康",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/DoctorAss/index",
-			"style": {
-				"navigationBarTitleText": "医生助手",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		},{
-			"path": "pages/createFile/index",
-			"style": {
-				"navigationBarTitleText": "自助建档",
-				"enablePullDownRefresh": true
-                // "navigationStyle": "custom"
-			}
-		}
-	],
-	"globalStyle": {
-		"navigationBarTextStyle": "white",
-		"navigationBarTitleText": "数字托育",
-		"navigationBarBackgroundColor": "#F7F7F7",
-		"backgroundColor": "#dadada",
-		"h5": {
-            "maxWidth": 1190,
-            "navigationBarTextStyle": "black",
-            "navigationBarBackgroundColor": "#FFFFFF"
-        }
-	},
-	"tabBar": {
-        "color": "#7A7E83",
-        "selectedColor": "#0d90ff",
-        "borderStyle": "black",
-        "backgroundColor": "#ffffff",
-        "height": "50px",
-        "fontSize": "10px",
-        "iconWidth": "24px",
-        "spacing": "3px",
-        "list": [{
-            "pagePath": "pages/mzjkHome/index",
-            "iconPath": "static/icons/homeHL.png",
-            "selectedIconPath": "static/icons/home.png",
-            "text": "首页"
-        }, {
-            "pagePath": "pages/index/index",
-			"iconPath": "static/icons/sztyHL.png",
-            "selectedIconPath": "static/icons/szty.png",
-            "text": "数字托育"
-        }, {
-            "pagePath": "pages/info/index",
-			"iconPath": "static/icons/userHL.png",
-            "selectedIconPath": "static/icons/user.png",
-            "text": "我的"
-        }]
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      // uni-ui 规则如下配置
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
     }
-
+  },
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "流产后关爱",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/sfList/index",
+      "style": {
+        "navigationBarTitleText": "随访列表"
+      }
+    },
+    {
+      "path": "pages/createFile/index",
+      "style": {
+        "navigationBarTitleText": "档案详情"
+      }
+    },
+    {
+      "path": "pages/info/index",
+      "style": {
+        "navigationBarTitleText": "我的信息"
+      }
+    },
+    {
+      "path": "pages/info/baseInfo",
+      "style": {
+        "navigationBarTitleText": "基本信息"
+      }
+    },
+    {
+      "path": "pages/file/list",
+      "style": {
+        "navigationBarTitleText": "档案列表",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/info/addBaby",
+      "style": {
+        //增加档案
+        "navigationBarTitleText": "档案详情",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/createFile/sczx",
+      "style": {
+        //首次咨询
+        "navigationBarTitleText": "首次咨询",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/createFile/scsf",
+      "style": {
+        //首次随访
+        "navigationBarTitleText": "首次随访",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/createFile/sfxq",
+      "style": {
+        //随访详情
+        "navigationBarTitleText": "随访详情",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/info/babyInfoItem",
+      "style": {
+        //单独宝宝信息
+        "navigationBarTitleText": "宝宝信息",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/createFile/index",
+      "style": {
+        "navigationBarTitleText": "自助建档"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "流产后关爱",
+    "navigationBarBackgroundColor": "#F7F7F7",
+    "backgroundColor": "#dadada",
+    "h5": {
+      "maxWidth": 1190,
+      "navigationBarTextStyle": "black",
+      "navigationBarBackgroundColor": "#FFFFFF"
+    }
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#f75688",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "height": "50px",
+    "fontSize": "10px",
+    "iconWidth": "24px",
+    "spacing": "3px",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "iconPath": "static/icons/home.png",
+        "selectedIconPath": "static/icons/homeHL.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/file/list",
+        "iconPath": "static/icons/lchga.png",
+        "selectedIconPath": "static/icons/lchgaHL.png",
+        "text": "我的档案"
+      },
+      {
+        "pagePath": "pages/info/index",
+        "iconPath": "static/icons/user.png",
+        "selectedIconPath": "static/icons/userHL.png",
+        "text": "我的"
+      }
+    ]
+  }
 }
