@@ -1,50 +1,61 @@
 import request from '@/utils/request.js'
-// 查询身份类型
-export const getUserType = (data) => {
-    return request.globalRequest('/weixin/shuzituoyuGetUserType', data)
-}
-export const toggleUserType = (data) => {
-    return request.globalRequest('/weixin/changeUserRole', data)
-}
-//获取基本信息
-export const getTrantodangan = (data) => {
-    return request.globalPost('/weixin/trantodangan', data)
-}
-//删除宝宝信息
-export const deletebaby = (data) => {
-    return request.globalPost('/weixin/deletebaby', data)
-}
-//新增宝宝
+//添加微信用户信息
 export const savebaby = (data) => {
-    return request.globalPost('/weixin/savebasemessage', data)
+  return request.globalPost('/mobile/wechatUser/addWechatUser', data)
 }
-//新增宝宝
-export const currentChildById = (data) => {
-    return request.globalRequest('/weixin/currentChildById', data)
+// 档案信息 添加档案
+export const addArchives = (data) => {
+  return request.globalRequest('/mobile/archives/addArchives', data)
 }
-//通过openid获取宝宝信息
-export const getChiTrasfer = (data) => {
-    return request.globalRequest('/weixin/chiTrasfer/list', data)
+//通过id删除
+export const deleteArchives = (data) => {
+  return request.globalRequest('/mobile/archives/deleteArchives', data)
 }
-//保存建档信息
-export const savedanganmessage = (data) => {
-    return request.globalPostRequest('/weixin/savedanganmessage', data)
+//编辑档案
+export const getTrantodangan = (data) => {
+  return request.globalPost('/mobile/archives/deleteArchives', data)
 }
-//根据openid获取微信绑定参数
-export const wxuserByOpenId = (data) => {
-    // return request.globalRequest('http://39.107.74.117:9999/fybj365-nurserymanage/chi/weixinUser/list', data)
-    return request.globalRequest('http://101.69.143.245:9999/fybj365-nurserymanage/chi/weixinUser/list', data)
+//档案列表
+export const queryArchivesList = (data) => {
+  return request.globalRequest('/mobile/archives/queryArchivesList', data)
 }
-//获取schoolId
-export const getSchoolId = (data) => {
-    return request.globalRequest('http://101.69.143.245:9999/fybj365-nurserymanage/teacher/chiTeacher/queryByCardId', data)
+//随访列表
+export const queryFollowList = (data) => {
+  return request.globalRequest('/mobile/archives/queryFollowList', data)
 }
-//获取儿童预约信息
-export const getChildBookInfo = (data) => {
-    // return request.globalRequest('http://39.107.74.117:9999/fybj365-nurserymanage/baby/chiPerson/selectChiReser7DayList', data)
-    return request.globalRequest('http://101.69.143.245:9999/fybj365-nurserymanage/baby/chiPerson/selectChiReser7DayList', data)
+//首次咨询  添加首次咨询
+export const addFirstConsultation = (data) => {
+  return request.globalRequest('/mobile/firstConsultation/addFirstConsultation', data)
 }
-//保存教师信息
-export const editTeacherByCardId = (data) => {
-    return request.globalPostRequest('http://101.69.143.245:9999/fybj365-nurserymanage/teacher/chiTeacher/editTeacherByCardId', data)
+//编辑首次咨询
+export const editFirstConsultation = (data) => {
+  return request.globalPostRequest('/mobile/firstConsultation/editFirstConsultation', data)
+}
+//通过id删除
+export const deleteFirstConsultation = (data) => {
+  return request.globalPostRequest('/mobile/firstConsultation/deleteFirstConsultation', data)
+}
+//首次随访新增
+export const addFirstFollow = (data) => {
+  return request.globalPostRequest('/mobile/firstFollow/addFirstFollow', data)
+}
+//通过id删除
+export const deleteFirstFollow = (data) => {
+  return request.globalPostRequest('/mobile/firstFollow/deleteFirstFollow', data)
+}
+//编辑首次随访
+export const editFirstFollow = (data) => {
+  return request.globalPostRequest('/mobile/behindFollow/editFirstFollow', data)
+}
+//后续随访新增
+export const addBehindFollow = (data) => {
+  return request.globalPostRequest('/mobile/behindFollow/addBehindFollow', data)
+}
+//通过id删除
+export const deleteBehindFollow = (data) => {
+  return request.globalPostRequest('/mobile/behindFollow/deleteBehindFollow', data)
+}
+//编辑首次随访
+export const editBehindFollow = (data) => {
+  return request.globalPostRequest('/mobile/behindFollow/editBehindFollow', data)
 }

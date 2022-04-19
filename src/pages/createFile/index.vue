@@ -2,8 +2,8 @@
   <view class="column">
     <uni-list>
       <uni-list-item
-        v-for="(item,index) in coulums"
         :key="index"
+        v-for="(item,index) in coulums"
       >
         <!-- 自定义 header -->
         <view
@@ -28,13 +28,17 @@
             mode="selector"
             @change="bindPickerChange($event,item.value)"
             :value="form[item.value]"
-            :range="pickRange[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
             :name="item.value"
           >
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?pickRange[item.value][form[item.value]]:`请输入${item.title}`}}</view>
+            >
+              {{form[item.value]!==''?{...pickRange[item.value][form[item.value]]}.text:`请输入${item.title}`}}
+              <!-- {{form[item.value]!==''?form[item.value]:`请输入${item.title}`}} -->
+            </view>
           </picker>
           <picker
             v-else-if="pickerDate.includes(item.value)"
@@ -49,6 +53,32 @@
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
             >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
+          </picker>
+        </view>
+      </uni-list-item>
+      <uni-list-item v-if="false">
+        <view
+          slot="header"
+          class="slot-box"
+        >
+          证件类型
+        </view>
+        <view
+          slot="body"
+          class="slot-body"
+        >
+          <picker
+            mode="selector"
+            @change="bindPickerChange($event,'certType')"
+            :value="form['certType']"
+            :range="pickRanges['certType']"
+            range-key="title"
+          >
+            <view class="input_btn">
+              {{form['certType']!==''?certType[form.certType].text:"3333"}}
+              <!-- {{form[item.value]!==''?{...pickRange[item.value][form[item.value]]}.text:`请输入${item.title}`}} -->
+              <!-- {{form[item.value]!==''?form[item.value]:`请输入${item.title}`}} -->
+            </view>
           </picker>
         </view>
       </uni-list-item>
@@ -69,7 +99,8 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { getTrantodangan } from '@/api/main'
+import { addArchives, getTrantodangan, queryArchivesList } from '@/api/main'
+import { mapGetters } from "vuex";
 
 export default {
   mixins: [validate],
@@ -77,56 +108,78 @@ export default {
     InfoTipPop
   },
   computed: {
+    ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
     startDate () {
       return this.getDate('start');
     },
     endDate () {
       return this.getDate('end');
     },
+    pickRanges () {
+      return {
+        nationality: this.nationality,
+        certType: this.certType,
+        domicileType: this.domicileType,
+        education: this.education,
+        ethnic: this.ethnic,
+        homeRegist: this.homeRegist,
+        occupation: this.occupation,
+        pastHistory: this.pastHistory,
+        presentHistory: this.presentHistory,
+      }
+    }
   },
   mounted () {
+    this.getSelectItem();
     this.init();
   },
   data () {
     return {
+      type: true,
       form: {
-        regions: "",
-        fileType: 0,
-        sex: 0,
-        birth: "",
-        idType: "",
-        idCode: "",
-        guoji: "",
-        minzu: "",
-        huji: "",
-        hujifenlei: "",
-        hujiguishu: "",
-        phone: "",
-        whcd: "",
-        zhiye: "",
-        xianzhuzhi: "",
-        hujidizhi: "",
-        hycs: "",
-        sccs: "",
-        xbs: "",
-        jws: "",
-        jzdw: "",
+        "accountAddressCode": "",//户口地址code
+        "accountAddressDetail": "",//户口地址详情
+        "accountAddressText": "",//户口地址名称
+        "birthday": "",//出生日期
+        "certNumber": "",//证件号码
+        "certType": "",//证件类型
+        "childbirthCount": 0,//产次
+        "consultationUnit": "",//就诊单位id
+        "consultationUnitName": "",//就诊单位名称
+        "domicileType": "",//户籍分类
+        "education": "",//文化程度
+        "ethnic": "",//民族 
+        "gender": "0",//性别 
+        "homeAddressCode": "",//现住地址
+        "homeAddressDetail": "",//现住地址详情
+        "homeAddressText": "",//现住地址名称
+        "homeRegist": "",//户籍归属
+        "id": 0,//
+        "name": "",//姓名
+        "nationality": "",//国籍
+        "occupation": "",//职业
+        "openid": "",
+        "pastHistory": "",//既往史
+        "phone": "",//电话
+        "pregnancyCount": 0,//孕次
+        "presentHistory": "",//现病史
+        "workUnit": "",//工作单位
       },
       inputData: ['name', 'childName', 'weight', 'idCode', 'xianzhuzhi', 'xianzhuzhi', 'phone'],
-      pickerData: ['sex', "idType", 'guoji', 'minzu', 'huji', 'hujifenlei', 'hujiguishu', 'whcd', 'hycs', 'sccs', 'zhiye', 'xbs', 'jws', 'jzdw'],
-      pickerDate: ['birth', 'childBirth'],
+      pickerData: ['gender', "certType", 'guoji', 'minzu', 'huji', 'hujifenlei', 'hujiguishu', 'whcd', 'hycs', 'sccs', 'zhiye', 'xbs', 'jws', 'jzdw'],
+      pickerDate: ['birthday', 'childBirth'],
       coulums: [{
         title: "姓名",
         value: "name"
       }, {
         title: "性别",
-        value: "sex"
+        value: "gender"
       }, {
         title: "出生年月",
-        value: "birth"
+        value: "birthday"
       }, {
         title: "证件类型",
-        value: "idType"
+        value: "certType"
       }, {
         title: "证件号",
         value: "idCode"
@@ -188,7 +241,15 @@ export default {
         xbs: [],
         jws: [],
         jzdw: [],
-        sex: ['男孩', '女孩'],
+        gender: [{
+          text: "女孩",
+          title: "女孩",
+          value: "10"
+        }, {
+          text: "男孩",
+          title: "男孩",
+          value: "21"
+        }],
         hycs: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         sccs: [1, 2, 3, 4, 5, 6, 7, 8, 9]
       },
@@ -196,22 +257,21 @@ export default {
   },
   methods: {
     init () {
-      // getTrantodangan({
-      // }).then(res => {
-      // })
+      this.type = this.$route.query.type ? true : false;
+      let title = this.$route.query.type ? "新增档案" : "档案详情"
+      console.log('ddddd', this.pickRanges);
+      uni.setNavigationBarTitle({
+        title
+      })
+
     },
     formSubmit () {
-      let url = ''
-      if (this.form.fileType == 0) {//孕妇建档
-        let openid = uni.getStorageSync('openid')
-        let hospital = this.pickRange.regions[this.form.regions].serverUrl
-        let hospitalid = this.pickRange.regions[this.form.regions].id
-        url = `http://wx.fybj365.com/weixin/archives/showView?url=create_archives&openid=${openid}&hospitalid=${hospitalid}&hospital=${hospital}`
-
-      } else if (this.form.fileType == 1) {//两癌建档
-
-      }
-      window.location.href = url
+      let params = Object.assign({}, this.form);
+      debugger
+      addArchives(params).then(res => {
+        let a = res
+        debugger
+      })
     },
     formReset () {
 
@@ -236,6 +296,17 @@ export default {
       // }
       this.form[v] = e.detail.value;
     },
+    async getSelectItem () {
+      await this.$store.dispatch('GET_NATIONALITY');
+      await this.$store.dispatch('GET_CERTTYPE');
+      await this.$store.dispatch('GET_EDUCATION');
+      await this.$store.dispatch('GET_DOMICILETYPE');
+      await this.$store.dispatch('GET_ETHNIC');
+      await this.$store.dispatch('GET_HOMEREGIST');
+      await this.$store.dispatch('GET_OCCUPATION');
+      await this.$store.dispatch('GET_PASTHISTORY');
+      await this.$store.dispatch('GET_PRESENTHISTORY');
+    }
   },
 }
 </script>

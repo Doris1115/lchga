@@ -58,7 +58,7 @@
         <button
           type="primary"
           class="submit_btn"
-          @click="addChild"
+          @click="addFile"
         >自助建档</button>
       </view>
       <view
@@ -76,7 +76,7 @@
           size="mini"
           plain
           class="submit_btn02"
-          @click="addChild"
+          @click="addFile"
         >添加档案</button>
       </view>
 
@@ -117,14 +117,14 @@ export default {
         }]
       })
     },
-    addChild (data) {
+    addFile (data) {
       uni.navigateTo({
-        url: `/pages/info/addBaby`
+        url: `/pages/createFile/index?type=1`
       })
     },
     getChildDetail (data) {
       uni.navigateTo({
-        url: `/pages/createFile/index`
+        url: `/pages/createFile/index?type=0`
       })
     }
   },
