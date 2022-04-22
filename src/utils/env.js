@@ -3,9 +3,9 @@ const env = process.env
 
 let baseUrl = ''
 if (env.NODE_ENV == 'development') {
-  baseUrl = 'http://39.107.74.117:6091'
+  baseUrl = 'http://39.107.74.117:9999'
 } else if (env.NODE_ENV == 'production') {
-  baseUrl = 'http://39.107.74.117:6091'
+  baseUrl = 'http://39.107.74.117:9999'
 } else if (env.NODE_ENV == 'test') {
   baseUrl = ''
 }

@@ -1,20 +1,19 @@
 <template>
   <view class="column">
-    <uni-list>
-      <uni-list-item
-        :key="index"
-        v-for="(item,index) in coulums"
-      >
-        <!-- 自定义 header -->
-        <view
-          slot="header"
-          class="slot-box"
-        >
-          {{item.title}}
-        </view>
-        <view
-          slot="body"
-          class="slot-body"
+    <uni-forms
+      :rules="rules"
+      :value="form"
+      ref="form"
+      validate-trigger="bind"
+      err-show-type="undertext"
+    >
+      <uni-group>
+        <uni-forms-item
+          :name="item.value"
+          :required="item.required"
+          :label="item.title"
+          :key="index"
+          v-for="(item,index) in coulums"
         >
           <input
             v-if="inputData.includes(item.value)"
@@ -36,15 +35,119 @@
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
             >
-              {{form[item.value]!==''?{...pickRange[item.value][form[item.value]]}.text:`请输入${item.title}`}}
-              <!-- {{form[item.value]!==''?form[item.value]:`请输入${item.title}`}} -->
+              {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
+            </view>
+          </picker>
+          <picker
+            v-else-if="numData.includes(item.value)"
+            mode="selector"
+            @change="bindPickerChange($event,item.value)"
+            :value="form[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
+            :name="item.value"
+          >
+            <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+            >
+              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
             </view>
           </picker>
           <picker
             v-else-if="pickerDate.includes(item.value)"
             mode="date"
             :name="item.value"
-            :value="form.birth"
+            :value="form.birthday"
+            :start="startDate"
+            :end="endDate"
+            @change="bindPickerChange($event,item.value)"
+          >
+            <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+            >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
+          </picker>
+        </uni-forms-item>
+      </uni-group>
+    </uni-forms>
+    <uni-list v-if="false">
+      <uni-list-item
+        :key="index"
+        v-for="(item,index) in coulums"
+        :class="{'required':item.rules?item.rules.required:false}"
+      >
+        <!-- 自定义 header -->
+        <view
+          slot="header"
+          class="slot-box"
+        >
+          {{item.title}}
+        </view>
+        <view
+          slot="body"
+          class="slot-body"
+        >
+          <uni-easyinput
+            type="text"
+            :inputBorder="true"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+          ></uni-easyinput>
+
+          <!-- <input
+            v-if="inputData.includes(item.value)"
+            class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+            placeholder-class="placeholder"
+            @blur="handleInput"
+          /> -->
+          <input
+            v-if="numData.includes(item.value)"
+            type="number"
+            class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+            placeholder-class="placeholder"
+          />
+          <picker
+            v-else-if="pickerData.includes(item.value)"
+            mode="selector"
+            @change="bindPickerChange($event,item.value)"
+            :value="form[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
+            :name="item.value"
+          >
+            <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+            >
+              {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
+            </view>
+          </picker>
+          <!-- <picker
+            v-else-if="numData.includes(item.value)"
+            mode="selector"
+            @change="bindPickerChange($event,item.value)"
+            :value="form[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
+            :name="item.value"
+          >
+            <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+            >
+              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
+            </view>
+          </picker> -->
+          <picker
+            v-else-if="pickerDate.includes(item.value)"
+            mode="date"
+            :name="item.value"
+            :value="form.birthday"
             :start="startDate"
             :end="endDate"
             @change="bindPickerChange($event,item.value)"
@@ -76,8 +179,6 @@
           >
             <view class="input_btn">
               {{form['certType']!==''?certType[form.certType].text:"3333"}}
-              <!-- {{form[item.value]!==''?{...pickRange[item.value][form[item.value]]}.text:`请输入${item.title}`}} -->
-              <!-- {{form[item.value]!==''?form[item.value]:`请输入${item.title}`}} -->
             </view>
           </picker>
         </view>
@@ -99,7 +200,7 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, getTrantodangan, queryArchivesList } from '@/api/main'
+import { addArchives, getTrantodangan, queryArchivesList, queryAreaList } from '@/api/main'
 import { mapGetters } from "vuex";
 
 export default {
@@ -126,6 +227,17 @@ export default {
         occupation: this.occupation,
         pastHistory: this.pastHistory,
         presentHistory: this.presentHistory,
+        gender: [{
+          text: "女孩",
+          title: "女孩",
+          value: "10"
+        }, {
+          text: "男孩",
+          title: "男孩",
+          value: "21"
+        }],
+        childbirthCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        pregnancyCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       }
     }
   },
@@ -136,123 +248,120 @@ export default {
   data () {
     return {
       type: true,
+      rules: {
+        name: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入用户名'
+          },
+          {
+            minLength: 3,
+            maxLength: 15,
+            errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符'
+          }
+          ]
+        },
+      },
       form: {
         "accountAddressCode": "",//户口地址code
         "accountAddressDetail": "",//户口地址详情
         "accountAddressText": "",//户口地址名称
         "birthday": "",//出生日期
         "certNumber": "",//证件号码
-        "certType": "",//证件类型
+        "certType": "2",//证件类型
         "childbirthCount": 0,//产次
         "consultationUnit": "",//就诊单位id
         "consultationUnitName": "",//就诊单位名称
-        "domicileType": "",//户籍分类
-        "education": "",//文化程度
-        "ethnic": "",//民族 
+        "domicileType": 1,//户籍分类
+        "education": 1,//文化程度
+        "ethnic": 1,//民族 
         "gender": "0",//性别 
         "homeAddressCode": "",//现住地址
         "homeAddressDetail": "",//现住地址详情
         "homeAddressText": "",//现住地址名称
-        "homeRegist": "",//户籍归属
-        "id": 0,//
+        "homeRegist": 1,//户籍归属
+        "id": "",//
         "name": "",//姓名
-        "nationality": "",//国籍
-        "occupation": "",//职业
+        "nationality": 43,//国籍
+        "occupation": 1,//职业
         "openid": "",
-        "pastHistory": "",//既往史
+        "pastHistory": 0,//既往史
         "phone": "",//电话
         "pregnancyCount": 0,//孕次
-        "presentHistory": "",//现病史
+        "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
       },
-      inputData: ['name', 'childName', 'weight', 'idCode', 'xianzhuzhi', 'xianzhuzhi', 'phone'],
-      pickerData: ['gender', "certType", 'guoji', 'minzu', 'huji', 'hujifenlei', 'hujiguishu', 'whcd', 'hycs', 'sccs', 'zhiye', 'xbs', 'jws', 'jzdw'],
+      inputData: ['name', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
+      pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
       pickerDate: ['birthday', 'childBirth'],
+      numData: ['pregnancyCount', 'childbirthCount',],
       coulums: [{
         title: "姓名",
-        value: "name"
+        value: "name",
+        required: true
       }, {
         title: "性别",
-        value: "gender"
+        value: "gender",
+        required: true
       }, {
         title: "出生年月",
-        value: "birthday"
+        value: "birthday",
+        required: true
       }, {
         title: "证件类型",
         value: "certType"
       }, {
         title: "证件号",
-        value: "idCode"
+        value: "certNumber",
+        required: true
       }, {
         title: "国籍",
-        value: "guoji"
+        value: "nationality"
       }, {
         title: "民族",
-        value: "minzu"
+        value: "ethnic"
       }, {
         title: "户籍",
         value: "huji"
       }, {
         title: "户籍分类",
-        value: "hujifenlei"
+        value: "domicileType"
       }, {
         title: "户籍归属",
-        value: "hujiguishu"
+        value: "homeRegist"
       }, {
         title: "联系方式",
-        value: "phone"
+        value: "phone",
+        required: true
       }, {
         title: "文化程度",
-        value: "whcd"
+        value: "education"
       }, {
         title: "职业",
-        value: "zhiye"
+        value: "occupation"
       }, {
         title: "现住址",
         value: "xianzhuzhi"
       }, {
         title: "户籍地址",
-        value: "hujidizhi"
+        value: "accountAddressDetail"
       }, {
         title: "怀孕次数",
-        value: "hycs"
+        value: "pregnancyCount"
       }, {
         title: "生产次数",
-        value: "sccs"
+        value: "childbirthCount"
       }, {
         title: "现病史",
-        value: "xbs"
+        value: "presentHistory"
       }, {
         title: "既往史",
-        value: "jws"
+        value: "pastHistory"
       }, {
         title: "就诊单位",
-        value: "jzdw"
+        value: "consultationUnit",
+        required: true
       }],
-      pickRange: {
-        idType: ['居民身份证', '港澳居民身份证', '护照', '军官证（士兵证）', '居民身份证15位', '其他'],
-        guoji: [],
-        minzu: [],
-        huji: [],
-        hujifenlei: ['农业户口', '非农业户口', '其他'],
-        hujiguishu: ['本地', '外地一年以上', '外地一年以内'],
-        whcd: ['研究生', '大学本科', '大学专科及专科学校', '中等专业学校', '技工学校', '高中', '初中', '小学', '文盲或半文盲', '其他'],
-        zhiye: [],
-        xbs: [],
-        jws: [],
-        jzdw: [],
-        gender: [{
-          text: "女孩",
-          title: "女孩",
-          value: "10"
-        }, {
-          text: "男孩",
-          title: "男孩",
-          value: "21"
-        }],
-        hycs: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        sccs: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-      },
     }
   },
   methods: {
@@ -262,8 +371,7 @@ export default {
       console.log('ddddd', this.pickRanges);
       uni.setNavigationBarTitle({
         title
-      })
-
+      });
     },
     formSubmit () {
       let params = Object.assign({}, this.form);
@@ -306,6 +414,14 @@ export default {
       await this.$store.dispatch('GET_OCCUPATION');
       await this.$store.dispatch('GET_PASTHISTORY');
       await this.$store.dispatch('GET_PRESENTHISTORY');
+    },
+    handleInput (e) {
+      let a = e.detail
+      if (!e.detail) {
+        uni.showToast({
+          title: "222"
+        })
+      }
     }
   },
 }
@@ -316,7 +432,7 @@ export default {
 }
 .slot-box {
   font-size: $uni-font-size-lg;
-  width: 4em;
+  width: 7em;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
   height: 2em;

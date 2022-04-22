@@ -1,251 +1,305 @@
 <template>
   <view class="column">
-    <uni-list>
-      <uni-list-item
-        v-for="(item,index) in coulums"
-        :key="index"
-      >
-        <!-- 自定义 header -->
-        <view
-          slot="header"
-          class="slot-box"
+    <uni-forms
+      :rules="rules"
+      :value="formData"
+      ref="form"
+      validate-trigger="bind"
+      err-show-type="undertext"
+    >
+      <uni-group top="0">
+        <uni-forms-item
+          name="name"
+          required
+          label="用户名"
         >
-          {{item.title}}
-        </view>
-        <view
-          slot="body"
-          class="slot-body"
+          <uni-easyinput
+            type="text"
+            :inputBorder="true"
+            v-model="formData.name"
+            placeholder="请输入用户名"
+          ></uni-easyinput>
+        </uni-forms-item>
+        <!-- 使用原生input，需要绑定binddata -->
+        <uni-forms-item
+          name="age"
+          required
+          label="年龄"
         >
           <input
-            v-if="inputData.includes(item.value)"
-            class="input_btn"
-            v-model="form[item.value]"
-            :placeholder="'请输入'+item.title"
-            placeholder-class="placeholder"
+            type="text"
+            v-model="formData.age"
+            class="uni-input-border"
+            @blur="binddata('age', $event.detail.value)"
+            placeholder="请输入年龄"
           />
-          <picker
-            v-else-if="pickerData.includes(item.value)"
-            mode="selector"
-            @change="bindPickerChange($event,item.value)"
-            :value="form[item.value]"
-            :range="pickRange[item.value]"
-            :name="item.value"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?pickRange[item.value][form[item.value]]:`请输入${item.title}`}}</view>
-          </picker>
-          <picker
-            v-else-if="pickerDate.includes(item.value)"
-            mode="date"
-            :name="item.value"
-            :value="form.birth"
-            :start="startDate"
-            :end="endDate"
-            @change="bindPickerChange($event,item.value)"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
-          </picker>
-        </view>
-      </uni-list-item>
-    </uni-list>
-    <button
-      type="primary"
-      class="submit_btn"
-      @click="formSubmit"
-    >保存</button>
-    <!-- 提示信息弹窗 -->
-    <info-tip-pop
-      ref="message"
-      :type="msgType"
-      :message="messageText"
-    />
+        </uni-forms-item>
+        <uni-forms-item
+          name="email"
+          label="邮箱"
+        >
+          <uni-easyinput
+            type="text"
+            v-model="formData.email"
+            placeholder="请输入邮箱"
+          ></uni-easyinput>
+        </uni-forms-item>
+        <!-- #ifndef APP-NVUE -->
+        <uni-forms-item
+          required
+          name="birth"
+          label="出生日期"
+        >
+          <uni-datetime-picker
+            type="date"
+            v-model="formData.birth"
+            start="2000-06-01 06:30:30"
+            end="2030-6-1"
+            return-type="timestamp"
+          ></uni-datetime-picker>
+        </uni-forms-item>
+        <uni-forms-item
+          name="checked"
+          label="详细信息"
+        >
+          <switch
+            :checked="formData.checked"
+            @change="change('checked', $event.detail.value)"
+          />
+        </uni-forms-item>
+        <!-- #endif -->
+      </uni-group>
+
+      <view class="example">
+        <button
+          class="button"
+          @click="submitForm('form')"
+        >校验表单</button>
+        <button
+          class="button"
+          @click="validateField('form')"
+        >只校验用户名和邮箱项</button>
+        <button
+          class="button"
+          @click="clearValidate('form', 'name')"
+        >移除用户名的校验结果</button>
+        <button
+          class="button"
+          @click="clearValidate('form')"
+        >移除全部表单校验结果</button>
+        <button
+          class="button"
+          @click="resetForm"
+        >重置表单</button>
+      </view>
+    </uni-forms>
   </view>
 </template>
 <script>
-import InfoTipPop from "@/pages/components/infoTipPop"
-import validate from '@/mixins/validate'
-import { getTrantodangan } from '@/api/main'
-
 export default {
-  mixins: [validate],
-  components: {
-    InfoTipPop
-  },
-  computed: {
-    startDate () {
-      return this.getDate('start');
-    },
-    endDate () {
-      return this.getDate('end');
-    },
-  },
-  mounted () {
-    this.init();
-  },
   data () {
     return {
-      form: {
-        regions: "",
-        fileType: 0,
-        sex: 0,
-        birth: "",
-        idType: "",
-        idCode: "",
-        guoji: "",
-        minzu: "",
-        huji: "",
-        hujifenlei: "",
-        hujiguishu: "",
-        phone: "",
-        whcd: "",
-        zhiye: "",
-        xianzhuzhi: "",
-        hujidizhi: "",
-        hycs: "",
-        sccs: "",
-        xbs: "",
-        jws: "",
-        jzdw: "",
+      formData: {
+        name: '',
+        age: '',
+        email: '',
+        sex: '',
+        hobby: [],
+        remarks: '',
+        checked: false,
+        country: -1,
+        birth: ''
       },
-      inputData: ['name', 'childName', 'weight', 'idCode', 'xianzhuzhi', 'xianzhuzhi', 'phone'],
-      pickerData: ['sex', "idType", 'guoji', 'minzu', 'huji', 'hujifenlei', 'hujiguishu', 'whcd', 'hycs', 'sccs', 'zhiye', 'xbs', 'jws', 'jzdw'],
-      pickerDate: ['birth', 'childBirth'],
-      coulums: [{
-        title: "姓名",
-        value: "name"
-      }, {
-        title: "性别",
-        value: "sex"
-      }, {
-        title: "出生年月",
-        value: "birth"
-      }, {
-        title: "证件类型",
-        value: "idType"
-      }, {
-        title: "证件号",
-        value: "idCode"
-      }, {
-        title: "国籍",
-        value: "guoji"
-      }, {
-        title: "民族",
-        value: "minzu"
-      }, {
-        title: "户籍",
-        value: "huji"
-      }, {
-        title: "户籍分类",
-        value: "hujifenlei"
-      }, {
-        title: "户籍归属",
-        value: "hujiguishu"
-      }, {
-        title: "联系方式",
-        value: "phone"
-      }, {
-        title: "文化程度",
-        value: "whcd"
-      }, {
-        title: "职业",
-        value: "zhiye"
-      }, {
-        title: "现住址",
-        value: "xianzhuzhi"
-      }, {
-        title: "户籍地址",
-        value: "hujidizhi"
-      }, {
-        title: "怀孕次数",
-        value: "hycs"
-      }, {
-        title: "生产次数",
-        value: "sccs"
-      }, {
-        title: "现病史",
-        value: "xbs"
-      }, {
-        title: "既往史",
-        value: "jws"
-      }, {
-        title: "就诊单位",
-        value: "jzdw"
-      }],
-      pickRange: {
-        idType: ['居民身份证', '港澳居民身份证', '护照', '军官证（士兵证）', '居民身份证15位', '其他'],
-        guoji: [],
-        minzu: [],
-        huji: [],
-        hujifenlei: ['农业户口', '非农业户口', '其他'],
-        hujiguishu: ['本地', '外地一年以上', '外地一年以内'],
-        whcd: ['研究生', '大学本科', '大学专科及专科学校', '中等专业学校', '技工学校', '高中', '初中', '小学', '文盲或半文盲', '其他'],
-        zhiye: [],
-        xbs: [],
-        jws: [],
-        jzdw: [],
-        sex: ['男孩', '女孩'],
-        hycs: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        sccs: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      sex: [{
+        text: '男',
+        value: '0'
       },
+      {
+        text: '女',
+        value: '1'
+      },
+      {
+        text: '未知',
+        value: '2'
+      }
+      ],
+      hobby: [{
+        text: '足球',
+        value: 0
+      },
+      {
+        text: '篮球',
+        value: 1
+      },
+      {
+        text: '游泳',
+        value: 2
+      }
+      ],
+      range: ['中国', '美国', '澳大利亚'],
+      show: false,
+      rules: {
+        name: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入用户名'
+          },
+          {
+            minLength: 3,
+            maxLength: 15,
+            errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符'
+          }
+          ]
+        },
+        age: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入年龄'
+          },
+          {
+            format: 'int',
+            errorMessage: '年龄必须是数字'
+          },
+          {
+            minimum: 18,
+            maximum: 30,
+            errorMessage: '年龄应该大于 {minimum} 岁，小于 {maximum} 岁'
+          }
+          ]
+        },
+        birth: {
+          rules: [{
+            required: true,
+            errorMessage: '请选择时间'
+          }]
+        },
+        email: {
+          rules: [{
+            format: 'email',
+            errorMessage: '请输入正确的邮箱地址'
+          }]
+        },
+        checked: {
+          rules: [{
+            format: 'bool'
+          }]
+        },
+        sex: {
+          rules: [{
+            format: 'string'
+          }]
+        },
+        hobby: {
+          rules: [{
+            format: 'array'
+          },
+          {
+            validateFunction: function (rule, value, data, callback) {
+              if (value.length < 2) {
+                callback('请至少勾选两个兴趣爱好')
+              }
+              return true
+            }
+          }
+          ]
+        }
+      }
     }
   },
-  methods: {
-    init () {
-      // getTrantodangan({
-      // }).then(res => {
-      // })
-    },
-    formSubmit () {
-      let url = ''
-      if (this.form.fileType == 0) {//孕妇建档
-        let openid = uni.getStorageSync('openid')
-        let hospital = this.pickRange.regions[this.form.regions].serverUrl
-        let hospitalid = this.pickRange.regions[this.form.regions].id
-        url = `http://wx.fybj365.com/weixin/archives/showView?url=create_archives&openid=${openid}&hospitalid=${hospitalid}&hospital=${hospital}`
-
-      } else if (this.form.fileType == 1) {//两癌建档
-
+  onLoad () {
+    uni.showLoading()
+    // this.formData 应该包含所有需要校验的表单
+    // 模拟异步请求数据
+    setTimeout(() => {
+      this.formData = {
+        name: 'DCloud',
+        age: 21,
+        email: '',
+        sex: '0',
+        hobby: [],
+        remarks: '热爱学习，热爱生活',
+        checked: false,
+        country: 2,
+        birth: ''
       }
-      window.location.href = url
-    },
-    formReset () {
-
-    },
-    getDate (type) {
-      const date = new Date();
-      let year = date.getFullYear();
-      let month = date.getMonth() + 1;
-      let day = date.getDate();
-      if (type === 'start') {
-        year = year - 10;
-      } else if (type === 'end') {
-        year = year + 2;
-      }
-      month = month > 9 ? month : '0' + month;
-      day = day > 9 ? day : '0' + day;
-      return `${year}-${month}-${day}`;
-    },
-    bindPickerChange (e, v) {
-      // if (v == 'currentType') {
-      //   this.formReset();
-      // }
-      this.form[v] = e.detail.value;
-    },
+      uni.hideLoading()
+    }, 500)
   },
+  onReady () {
+    this.$refs.form.setRules(this.rules)
+  },
+  methods: {
+    birthChange (e) {
+      console.log(e)
+    },
+    change (name, value) {
+      this.formData.checked = value
+      this.$refs.form.setValue(name, value)
+    },
+
+    /**
+     * 手动提交
+     * @param {Object} form
+     */
+    submitForm (form) {
+      // console.log(this.formData);
+      this.$refs[form]
+        .submit()
+        .then(res => {
+          console.log('表单的值：', res)
+          uni.showToast({
+            title: '验证成功'
+          })
+        })
+        .catch(errors => {
+          console.error('验证失败：', errors)
+        })
+    },
+
+    /**
+     * 手动重置表单
+     */
+    resetForm () {
+      this.$refs.form.resetFields()
+    },
+    /**
+     * 部分表单校验
+     * @param {Object} form
+     */
+    validateField (form) {
+      this.$refs[form]
+        .validateField(['name', 'email'])
+        .then(res => {
+          uni.showToast({
+            title: '验证成功'
+          })
+          console.log('表单的值：', res)
+        })
+        .catch(errors => {
+          console.error('验证失败：', errors)
+        })
+    },
+
+    /**
+     * 清除表单校验
+     * @param {Object} form
+     * @param {Object} name
+     */
+    clearValidate (form, name) {
+      if (!name) name = []
+      this.$refs[form].clearValidate(name)
+    }
+  }
 }
 </script>
+
 <style lang="scss" scoped>
 .column {
   margin-top: $uni-spacing-col-lg;
 }
 .slot-box {
   font-size: $uni-font-size-lg;
-  width: 4em;
+  width: 7em;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
   height: 2em;
