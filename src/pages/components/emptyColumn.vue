@@ -27,6 +27,11 @@ export default {
       default: "添加档案"
     }
   },
+  data () {
+    return {
+      empty_icon: "/static/icons/empty.png",
+    }
+  },
   methods: {
     addFile () {
       this.$emit('saveBtn')

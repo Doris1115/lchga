@@ -19,7 +19,7 @@ export const deleteArchives = (data) => {
 }
 //编辑档案
 export const editArchives = (data) => {
-  return request.globalPost(baseUrl + '/mobile/archives/editArchives', data)
+  return request.globalPostRequest(baseUrl + '/mobile/archives/editArchives', data)
 }
 //档案列表
 export const queryArchivesList = (data) => {

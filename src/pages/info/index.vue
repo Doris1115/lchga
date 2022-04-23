@@ -10,7 +10,7 @@
       <view class="pull-left">
         <h1>{{name}}</h1>
         <p>
-          <span>{{phone}}</span>
+          <span>{{sex?"男":"女"}}</span>
         </p>
       </view>
     </view>
@@ -49,11 +49,12 @@
 <script>
 export default {
   data () {
+    var wxInfo = JSON.parse(uni.getStorageSync("wxInfo"))
     return {
-      imageUrl: '/static/icons/touxiang.png',
-      name: "姚慧",
+      imageUrl: wxInfo.headimgurl,
+      name: wxInfo.nickname,
       types: [0, 1, 2],
-      phone: '13317330328',
+      sex: wxInfo.sex,
       coulums: [{
         title: "我的资料",
         icon: "/static/icons/wdxx.png",

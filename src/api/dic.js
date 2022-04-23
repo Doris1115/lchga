@@ -64,7 +64,7 @@ export const yesno = () => {
 export const abortion_love_menstrual = () => {
   return request.globalRequest(baseUrl + 'abortion_love_menstrual')
 }
-// //是否继续使用
-// export const yesno = () => {
-//   return request.globalRequest(baseUrl + 'yesno')
-// }
+//随访方式
+export const follow_manner = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_follow_manner')
+}

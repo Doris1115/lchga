@@ -1,11 +1,14 @@
 <template>
+  <!-- 随访列表 -->
   <view>
     <view class="column">
-      <view class="wrap">
+      <view
+        class="wrap"
+        v-if="firstConsultation"
+      >
         <uni-list
           class="column_baby"
           :border="false"
-          v-if="firstConsultation"
         >
           <uni-list-item
             class="item_column"
@@ -142,14 +145,24 @@
           @click="addSfRecord"
         >新增随访记录</button>
       </view>
+      <empty-column
+        v-else
+        title="您还没有添加随访信息"
+        btnTitle="添加首次咨询"
+        @saveBtn="addSfRecord"
+      />
 
     </view>
   </view>
 </template>
 <script>
 import { queryFollowList } from '@/api/main'
+import EmptyColumn from "@/pages/components/emptyColumn"
 
 export default {
+  components: {
+    EmptyColumn,
+  },
   data () {
     return {
       empty_icon: "/static/icons/empty.png",
@@ -159,8 +172,8 @@ export default {
         type: `  随 诊 方 式 `,
         sfywhy: "再次意外妊娠",
       },
-      firstConsultation: {},
-      firstFollow: {},
+      firstConsultation: null,
+      firstFollow: null
     }
   },
   mounted () {
@@ -196,7 +209,7 @@ export default {
         // }]
       })
     },
-    addSfRecord (data) {
+    addSfRecord () {
       let url = `/pages/createFile/sczx?type=1`;
       if (this.firstConsultation && !this.firstFollow) {
         url = "/pages/createFile/scsf?type=1"

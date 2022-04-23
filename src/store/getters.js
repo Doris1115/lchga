@@ -15,5 +15,6 @@ const getters = {
   pregnancyReason: state => state.dic.pregnancyReason,
   yesno: state => state.dic.yesno,
   yylypsb: state => state.dic.yylypsb,
+  followManner: state => state.dic.followManner,
 }
 export default getters

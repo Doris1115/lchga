@@ -10,8 +10,7 @@
     {
       "path": "pages/home/index",
       "style": {
-        "navigationBarTitleText": "流产后关爱",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "流产后关爱"
       }
     },
     {
@@ -35,22 +34,13 @@
     {
       "path": "pages/info/baseInfo",
       "style": {
-        "navigationBarTitleText": "基本信息"
+        "navigationBarTitleText": "我的资料"
       }
     },
     {
       "path": "pages/file/list",
       "style": {
-        "navigationBarTitleText": "档案列表",
-        "enablePullDownRefresh": true
-      }
-    },
-    {
-      "path": "pages/info/addBaby",
-      "style": {
-        //增加档案
-        "navigationBarTitleText": "档案详情",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "档案列表"
       }
     },
     {
@@ -71,20 +61,13 @@
       "path": "pages/createFile/sfxq",
       "style": {
         //随访详情
-        "navigationBarTitleText": "随访详情"
-      }
-    },
-    {
-      "path": "pages/info/babyInfoItem",
-      "style": {
-        //单独宝宝信息
-        "navigationBarTitleText": "宝宝信息"
+        "navigationBarTitleText": "后续随访"
       }
     },
     {
       "path": "pages/createFile/index",
       "style": {
-        "navigationBarTitleText": "自助建档"
+        "navigationBarTitleText": "档案详情"
       }
     }
   ],

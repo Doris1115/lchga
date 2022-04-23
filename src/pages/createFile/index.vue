@@ -1,4 +1,5 @@
 <template>
+  <!-- 档案详情 -->
   <view class="column">
     <uni-forms
       :rules="rules"
@@ -78,12 +79,14 @@
       type="primary"
       class="submit_btn"
       @click="formSubmit"
+      :loading="loading"
     >{{type?"新 增":"修 改"}}</button>
     <button
       type="primary"
-      class="submit_btn del "
+      class="submit_btn del"
       @click="del"
       v-if="!type"
+      :loading="loading"
     >删除档案</button>
     <!-- 提示信息弹窗 -->
     <info-tip-pop
@@ -96,7 +99,7 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, editArchives } from '@/api/main'
+import { addArchives, editArchives, deleteArchives } from '@/api/main'
 import { mapGetters } from "vuex";
 import { validateMobile } from "@/utils/verify.js"
 export default {
@@ -150,6 +153,7 @@ export default {
   data () {
     return {
       type: true,
+      loading: false,
       rules: {
         name: {
           rules: [{
@@ -310,6 +314,7 @@ export default {
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
+        this.loading = true;
         let openid = uni.getStorageSync('openid');
         this.form.openid = openid
         let params = Object.assign({}, this.form);
@@ -380,7 +385,6 @@ export default {
       this.form[v] = e.detail.value;
     },
     async getSelectItem () {
-
       await this.$store.dispatch('GET_NATIONALITY');
       await this.$store.dispatch('GET_CERTTYPE');
       await this.$store.dispatch('GET_EDUCATION');
@@ -401,6 +405,13 @@ export default {
     },
     validate (val) {
       this.$refs.form.validate()
+    },
+    del () {
+      let archivesId = uni.getStorageSync('archivesId')
+      this.loading = false;
+      deleteArchives({ id: archivesId }).then(res => {
+
+      })
     }
   },
 }

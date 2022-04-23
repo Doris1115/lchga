@@ -13,8 +13,9 @@ import {
   lcMethod,//拟流产方式
   byTime,//拟避孕时间
   rsyy,//本次妊娠原因
-  yesno,//本次妊娠原因
-  abortion_love_menstrual,//本次妊娠原因
+  yesno,//是否继续
+  abortion_love_menstrual,//月经量与平时比
+  follow_manner,//随访方式
 } from '@/api/dic'
 
 const dic = {
@@ -35,6 +36,7 @@ const dic = {
     presentHistory: [],//现病史
     yesno: [],//是否继续使用
     yylypsb: [],//月经量与平时比
+    followManner: [],//随访方式
   },
   mutations: {
     Set_Nationality (state, nationality) {
@@ -86,12 +88,16 @@ const dic = {
     Set_YYLYPSJ (state, value) {
       state.yylypsb = value
     },
+    Set_FOLLOWMANNER (state, value) {
+      state.followManner = value
+    },
   },
   actions: {
     GET_NATIONALITY: ({ commit }) => {
       return new Promise(res => {
         getShijiegeguohediqumingcheng().then(resolve => {
           dic.state.nationality.length > 0 || commit('Set_Nationality', resolve.result)
+          uni.setStorageSync('nationality', true)
           res();
         });
       })
@@ -100,6 +106,8 @@ const dic = {
       return new Promise(res => {
         card().then(resolve => {
           dic.state.certType.length > 0 || commit('Set_CertType', resolve.result)
+          uni.setStorageSync('certType', true)
+
           res();
         });
       })
@@ -108,6 +116,7 @@ const dic = {
       return new Promise(res => {
         wenhuachengdu().then(resolve => {
           dic.state.education.length > 0 || commit('Set_Education', resolve.result)
+          uni.setStorageSync('education', true)
           res();
         });
       })
@@ -116,6 +125,7 @@ const dic = {
       return new Promise(res => {
         chengxiangfenlei().then(resolve => {
           dic.state.domicileType.length > 0 || commit('Set_DomicileType', resolve.result)
+          uni.setStorageSync('domicileType', true)
           res();
         });
       })
@@ -124,6 +134,7 @@ const dic = {
       return new Promise(res => {
         minzu().then(resolve => {
           dic.state.ethnic.length > 0 || commit('Set_Ethnic', resolve.result)
+          uni.setStorageSync('ethnic', true)
           res();
         });
       })
@@ -132,6 +143,7 @@ const dic = {
       return new Promise(res => {
         hukouguishu().then(resolve => {
           dic.state.homeRegist.length > 0 || commit('Set_HomeRegist', resolve.result)
+          uni.setStorageSync('homeRegist', true)
           res();
         });
       })
@@ -140,6 +152,7 @@ const dic = {
       return new Promise(res => {
         renqunfenleizhiye().then(resolve => {
           dic.state.occupation.length > 0 || commit('Set_Occupation', resolve.result)
+          uni.setStorageSync('occupation', true)
           res();
         });
       })
@@ -148,6 +161,7 @@ const dic = {
       return new Promise(res => {
         past_history().then(resolve => {
           dic.state.pastHistory.length > 0 || commit('Set_PastHistory', resolve.result)
+          uni.setStorageSync('pastHistory', true)
           res();
         });
       })
@@ -156,6 +170,7 @@ const dic = {
       return new Promise(res => {
         present_history().then(resolve => {
           dic.state.presentHistory.length > 0 || commit('Set_PresentHistory', resolve.result)
+          uni.setStorageSync('presentHistory', true)
           res();
         });
       })
@@ -165,6 +180,7 @@ const dic = {
       return new Promise(res => {
         byPlan().then(resolve => {
           dic.state.gestatePlan.length > 0 || commit('Set_GestatePlan', resolve.result)
+          uni.setStorageSync('gestatePlan', true)
           res();
         });
       })
@@ -173,6 +189,7 @@ const dic = {
       return new Promise(res => {
         lcMethod().then(resolve => {
           dic.state.planAbortionTime.length > 0 || commit('Set_PlanAbortionTime', resolve.result)
+          uni.setStorageSync('planAbortionTime', true)
           res();
         });
       })
@@ -181,6 +198,7 @@ const dic = {
       return new Promise(res => {
         byMethod().then(resolve => {
           dic.state.planContraceptionMethod.length > 0 || commit('Set_PlanContraceptionMethod', resolve.result)
+          uni.setStorageSync('planContraceptionMethod', true)
           res();
         });
       })
@@ -189,6 +207,7 @@ const dic = {
       return new Promise(res => {
         byTime().then(resolve => {
           dic.state.planContraceptionTime.length > 0 || commit('Set_PlanContraceptionTime', resolve.result)
+          uni.setStorageSync('planContraceptionTime', true)
           res();
         });
       })
@@ -197,14 +216,16 @@ const dic = {
       return new Promise(res => {
         rsyy().then(resolve => {
           dic.state.pregnancyReason.length > 0 || commit('Set_PregnancyReason', resolve.result)
+          uni.setStorageSync('pregnancyReason', true)
           res();
         });
       })
     },
-    GET_PLANCONTRACEPTIOMTIME: ({ commit }) => {
+    GET_YESNO: ({ commit }) => {
       return new Promise(res => {
         yesno().then(resolve => {
           dic.state.yesno.length > 0 || commit('Set_Yesno', resolve.result)
+          uni.setStorageSync('yesno', true)
           res();
         });
       })
@@ -213,6 +234,16 @@ const dic = {
       return new Promise(res => {
         abortion_love_menstrual().then(resolve => {
           dic.state.yylypsb.length > 0 || commit('Set_YYLYPSJ', resolve.result)
+          uni.setStorageSync('yylypsb', true)
+          res();
+        });
+      })
+    },
+    GET_FOLLOWMANNER: ({ commit }) => {
+      return new Promise(res => {
+        follow_manner().then(resolve => {
+          dic.state.followManner.length > 0 || commit('Set_FOLLOWMANNER', resolve.result)
+          uni.setStorageSync('yylypsb', true)
           res();
         });
       })

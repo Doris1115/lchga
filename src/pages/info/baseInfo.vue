@@ -1,25 +1,50 @@
 <template>
   <view class="column">
-    <form @submit="formSubmit" @reset="formReset">
+    <form
+      @submit="formSubmit"
+      @reset="formReset"
+    >
       <uni-list>
-        <uni-list-item v-for="(item,index) in coulums" :key="index">
+        <uni-list-item
+          v-for="(item,index) in coulums"
+          :key="index"
+        >
           <!-- 自定义 header -->
-          <view slot="header" class="slot-box">
+          <view
+            slot="header"
+            class="slot-box"
+          >
             {{item.title}}
           </view>
-          <view slot="body" class="slot-body">
-            <input v-if="item.value==='motherName'" class="input_btn" :name="item.value" :placeholder="'请输入'+item.title" v-model="form.motherName" />
-            <input v-if="item.value==='cardCode'" class="input_btn" :name="item.value" :placeholder="'请输入'+item.title" v-model="form.cardCode" />
-            <picker v-else-if="item.value==='hospital'" mode="selector" @change="bindPickerChange" :value="hospitalIndex" :range="hospital" :name="item.value">
-              <view class="input_btn">{{hospital[hospitalIndex]}}</view>
-            </picker>
-            <picker v-else-if="item.value==='lastEmmenia'" mode="date" :name="item.value" :value="form.lastEmmenia" :start="startDate" :end="endDate" @change="bindDateChange">
-              <view class="input_btn">{{form.lastEmmenia}}</view>
-            </picker>
+          <view
+            slot="body"
+            class="slot-body"
+          >
+            <input
+              v-if="item.value==='name'"
+              class="input_btn"
+              :name="item.value"
+              :placeholder="'请输入'+item.title"
+              v-model="form.name"
+              disabled
+            />
+            <input
+              v-if="item.value==='sex'"
+              class="input_btn"
+              :name="item.value"
+              :placeholder="'请输入'+item.title"
+              v-model="form.sex"
+              disabled
+            />
           </view>
         </uni-list-item>
       </uni-list>
-      <button type="primary" class="submit_btn" form-type="submit">保存</button>
+      <button
+        v-if="false"
+        type="primary"
+        class="submit_btn"
+        form-type="submit"
+      >保存</button>
     </form>
   </view>
 </template>
@@ -27,49 +52,43 @@
 import { getTrantodangan, savedanganmessage } from '@/api/main'
 
 export default {
-  mounted() {
+  mounted () {
     this.getBaseInfo();
   },
-  data() {
+  data () {
+    var wxInfo = JSON.parse(uni.getStorageSync("wxInfo"))
+
     const currentDate = this.getDate({
       format: true
     })
     return {
       form: {
-        motherName: "",
-        cardCode: "",
-        hospital: "",
-        lastEmmenia: "",
+        name: wxInfo.nickname,
+        sex: wxInfo.sex ? "男" : "女",
       },
       hospital: [],
       hospitalIndex: 1,
       hospitalTotal: [],
       coulums: [{
-        title: "女方姓名",
-        value: "motherName"
+        title: "姓名",
+        value: "name"
       }, {
-        title: "证件号",
-        value: "cardCode"
-      }, {
-        title: "建档地区",
-        value: "hospital"
-      }, {
-        title: "末次月经",
-        value: "lastEmmenia"
+        title: "性别",
+        value: "sex"
       }],
       date: currentDate
     }
   },
   computed: {
-    startDate() {
+    startDate () {
       return this.getDate('start');
     },
-    endDate() {
+    endDate () {
       return this.getDate('end');
     }
   },
   methods: {
-    formSubmit(e) {
+    formSubmit (e) {
       uni.showLoading()
       let form = this.form
       savedanganmessage(form).then(res => {
@@ -77,14 +96,14 @@ export default {
         debugger
       })
     },
-    bindPickerChange(e) {
+    bindPickerChange (e) {
       this.hospitalIndex = e.target.value;
       this.form.hospital = this.hospitalTotal[e.target.value].id
     },
-    bindDateChange(e) {
+    bindDateChange (e) {
       this.form.lastEmmenia = e.target.value;
     },
-    getBaseInfo() {
+    getBaseInfo () {
       let uid = uni.getStorageSync('uid');
       getTrantodangan({
         uid,
@@ -108,7 +127,7 @@ export default {
         })
       })
     },
-    getDate(type) {
+    getDate (type) {
       const date = new Date();
       let year = date.getFullYear();
       let month = date.getMonth() + 1;

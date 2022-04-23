@@ -24,14 +24,6 @@
             placeholder-class="placeholder"
             :disabled="item.value=='name'"
           />
-          <input
-            v-if="numData.includes(item.value)"
-            class="input_btn"
-            type="number"
-            v-model="form[item.value]"
-            :placeholder="'请输入'+item.title"
-            placeholder-class="placeholder"
-          />
           <picker
             v-else-if="pickerData.includes(item.value)"
             mode="selector"
@@ -49,19 +41,32 @@
             </view>
           </picker>
           <picker
-            v-else-if="pickerDate.includes(item.value)"
-            mode="date"
-            :name="item.value"
-            :value="form.planAbortionTime"
-            :start="startDate"
-            :end="endDate"
+            v-else-if="numData.includes(item.value)"
+            mode="selector"
             @change="bindPickerChange($event,item.value)"
+            :value="form[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
+            :name="item.value"
           >
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
+            >
+              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
+            </view>
           </picker>
+        </uni-forms-item>
+        <uni-forms-item
+          name="remark"
+          label="备注"
+          class="text-area-box"
+        >
+          <uni-easyinput
+            type="textarea"
+            v-model="form.remark"
+            placeholder="请输入备注"
+          />
         </uni-forms-item>
         <uni-forms-item
           name="consultationFocus"
@@ -100,7 +105,7 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { editFirstFollow, deleteFirstFollow, addFirstFollow } from '@/api/main'
+import { addBehindFollow, deleteBehindFollow, editBehindFollow } from '@/api/main'
 import { mapGetters } from "vuex";
 export default {
   mixins: [validate],
@@ -108,15 +113,16 @@ export default {
     InfoTipPop
   },
   computed: {
-    ...mapGetters(["yylypsb", "yesno", "planContraceptionMethod"]),
+    ...mapGetters(["yesno", "planContraceptionMethod", 'followManner']),
     pickRanges () {
       return {
         "contraceptionMethod": this.planContraceptionMethod,//目前避孕方法
-        "isGoUse": this.yesno,//是否继续使用 
-        "isMenstrualRecover": this.yesno,//月经是否恢复 
-        "isSexLife": this.yesno,//是否恢复性生活
-        "menstrual": this.yylypsb,//月经量与平时比
-        "replacement": this.planContraceptionMethod,//替换产品，打算更换为
+        "followManner": this.followManner,//随访方式 
+        "isGoUse": this.yesno,//是否坚持使用 
+        "isUseOther": this.yesno,//是否换用其他方法
+        "replacement": this.planContraceptionMethod,//替换产品
+        "surprisePregnancy": this.yesno,//再次意外妊娠
+        'followTime': ["三月随访", "六月随访", "九月随访", "十二月随访", "二十四月随访"],
       }
     }
   },
@@ -134,72 +140,55 @@ export default {
     return {
       type: true,
       form: {
-        "name": uni.getStorageSync('name'),
-        "afterAbortionBloodDay": 7,//流产后出血天数
-        "afterAbortionDayRecover": 60,//性生活流产后多少天恢复
-        "afterAbortionMenstrualRecover": 40,//月经流产后多少天恢复
+        "name": uni.getStorageSync('name'),//档案id
         "archivesId": uni.getStorageSync('archivesId'),
-        "consultationFocus": 0,//重点咨询内容
-        "contraceptionFeel": "",//目前避孕主要感受
         "contraceptionMethod": 0,//目前避孕方法
-        "id": 0,
-        "isGoUse": 0,//是否继续使用
-        "isMenstrualRecover": 0,//月经是否恢复
-        "isSexLife": 0,//是否恢复性生活 
-        "menstrual": 0,//月经量与平时比
-        "replacement": 0//替换产品，打算更换为 
+        "followManner": 0,//随访方式
+        "followTime": 0,//随访时间（月）
+        "id": "",
+        "isGoUse": 0,//是否坚持使用
+        "isUseOther": 0,//是否换用其他方法
+        "problem": "",//存在问题
+        "reason": "",//原因
+        "remark": "",//备注
+        "replacement": 0,//替换产品
+        "surprisePregnancy": 0//再次意外妊娠
       },
-      rules: {
-        consultationFocus: {
-          rules: [{
-            required: true,
-            errorMessage: ' '
-          }]
-        }
-      },
-      inputData: ['name', 'contraceptionFeel'],
-      pickerData: ['isSexLife', 'isMenstrualRecover', 'menstrual', 'contraceptionMethod', 'isGoUse', 'replacement'],
-      pickerDate: ['planAbortionTime'],
-      numData: ['afterAbortionDayRecover', 'afterAbortionMenstrualRecover', 'afterAbortionBloodDay'],
+      rules: {},
+      inputData: ['name', 'problem', 'reason'],
+      pickerData: ['contraceptionMethod', 'followManner', 'isGoUse', 'isUseOther', 'replacement', 'surprisePregnancy'],
+      numData: ['followTime'],
       coulums: [{
         title: "姓名",
         value: "name",
       }, {
-        title: "是否恢复性生活",
-        value: "isSexLife",
+        title: "随访时间（月）",
+        value: "followTime",
       }, {
-        title: "流产后多少天恢复",
-        value: "afterAbortionDayRecover"
+        title: "随访方式",
+        value: "followManner"
       }, {
-        title: "月经是否恢复",
-        value: "isMenstrualRecover",
-      }, {
-        title: "流产后几天恢复",
-        value: "afterAbortionMenstrualRecover"
-      }, {
-        title: "月经量与平时比",
-        value: "menstrual",
-      }, {
-        title: "流产后出血天数",
-        value: "afterAbortionBloodDay",
-      }, {
-        title: "目前避孕方式",
+        title: "目前避孕方法",
         value: "contraceptionMethod",
       }, {
-        title: "目前避孕感受",
-        value: "contraceptionFeel",
+        title: "再次意外妊娠",
+        value: "surprisePregnancy"
       }, {
-        title: "是否继续使用",
+        title: "存在问题",
+        value: "problem",
+      }, {
+        title: "是否坚持使用",
         value: "isGoUse",
       }, {
-        title: "替换产品",
+        title: "原因",
+        value: "reason",
+      }, {
+        title: "换其他方法",
+        value: "isUseOther",
+      }, {
+        title: "打算换为",
         value: "replacement",
       }],
-      // , {
-      //   title: "重点咨询内容",
-      //   value: "consultationFocus",
-      // }
-
     }
   },
   methods: {
@@ -224,7 +213,7 @@ export default {
           title: '加载中'
         });
         if (this.type) {//新增
-          addFirstFollow(params).then(res => {
+          addBehindFollow(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -239,7 +228,7 @@ export default {
             }
           })
         } else {
-          editFirstFollow(params).then(res => {
+          editBehindFollow(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -283,13 +272,13 @@ export default {
       this.form[v] = e.detail.value;
     },
     async getSelectItem () {
-      await this.$store.dispatch('GET_YYLYPSB');
-      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_YESNO');
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
+      await this.$store.dispatch('GET_FOLLOWMANNER');
     },
     del () {
       let archivesId = uni.getStorageSync('archivesId')
-      deleteFirstFollow({
+      deleteBehindFollow({
         archivesId
       }).then(res => {
 
@@ -315,7 +304,7 @@ export default {
   }
 }
 ::v-deep .uni-forms-item__label {
-  width: 10em !important;
+  width: 8em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
   height: 118rpx;

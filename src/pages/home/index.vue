@@ -1,6 +1,6 @@
 <template>
   <view class="content">
-    <view @click="navigatorTag('/pages/ruyjs/index')">
+    <view>
       <image
         class="banner"
         src="/static/image/banner.png"
@@ -42,15 +42,15 @@ export default {
     return {
       id: "",
       navBar: [{
-        url: '/pages/ruyjs/index',
+        url: '/pages/createFile/index?type=1',
         icon: "/static/image/jgyjx.png",
         title: "关爱服务"
       }, {
-        url: '/pages/ztyjs/index',
+        url: '/pages/createFile/index?type=1',
         icon: "/static/image/zzjd.png",
         title: "自助建档"
       }, {
-        url: '/pages/jgyjs/index',
+        url: '/pages/createFile/index?type=1',
         icon: "/static/image/zxfw.png",
         title: "流产咨询"
       }],

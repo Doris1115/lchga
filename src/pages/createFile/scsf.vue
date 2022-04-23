@@ -15,6 +15,7 @@
           :label="item.title"
           :key="index"
           v-for="(item,index) in coulums"
+          v-show="validateShow(item)"
         >
           <input
             v-if="inputData.includes(item.value)"
@@ -25,7 +26,7 @@
             :disabled="item.value=='name'"
           />
           <input
-            v-if="numData.includes(item.value)"
+            v-else-if="numData.includes(item.value)"
             class="input_btn"
             type="number"
             v-model="form[item.value]"
@@ -82,6 +83,7 @@
       type="primary"
       class="submit_btn"
       @click="formSubmit"
+      :loading="loading"
     >{{type?"新 增":"修 改"}}</button>
     <button
       type="primary"
@@ -133,6 +135,7 @@ export default {
   data () {
     return {
       type: true,
+      loading: false,
       form: {
         "name": uni.getStorageSync('name'),
         "afterAbortionBloodDay": 7,//流产后出血天数
@@ -195,11 +198,6 @@ export default {
         title: "替换产品",
         value: "replacement",
       }],
-      // , {
-      //   title: "重点咨询内容",
-      //   value: "consultationFocus",
-      // }
-
     }
   },
   methods: {
@@ -215,10 +213,13 @@ export default {
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
+        this.loading = true;
         let openid = uni.getStorageSync('openid');
         let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
         this.form.archivesId = archivesId
+        this.form.afterAbortionMenstrualRecover = this.form.isMenstrualRecover == 0 ? "" : this.form.afterAbortionMenstrualRecover;
+        this.form.afterAbortionDayRecover = this.form.isSexLife == 0 ? "" : this.form.afterAbortionDayRecover;
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'
@@ -226,17 +227,15 @@ export default {
         if (this.type) {//新增
           addFirstFollow(params).then(res => {
             uni.hideLoading()
-            if (res.code) {
-              uni.showToast({
-                title: res.message,
+            uni.showToast({
+              title: res.message,
+            })
+            setTimeout(() => {
+              uni.navigateTo({
+                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
               })
-              setTimeout(() => {
-                uni.navigateTo({
-                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
-                })
 
-              }, 1000);
-            }
+            }, 1000);
           })
         } else {
           editFirstFollow(params).then(res => {
@@ -245,18 +244,27 @@ export default {
               uni.showToast({
                 title: res.message,
               })
-              setTimeout(() => {
-                uni.navigateTo({
-                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
-                })
-              }, 1000);
             }
+            setTimeout(() => {
+              uni.navigateTo({
+                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+              })
+            }, 1000);
           })
-
         }
       })
     },
     formReset () {
+
+    },
+    validateShow (item) {
+      let v = true
+      if (item.value == 'afterAbortionDayRecover') {
+        v = this.form.isSexLife == "0"
+      } else if (item.value == "afterAbortionMenstrualRecover") {
+        v = this.form.isMenstrualRecover == "0"
+      }
+      return v
 
     },
     validateField () {
@@ -284,7 +292,7 @@ export default {
     },
     async getSelectItem () {
       await this.$store.dispatch('GET_YYLYPSB');
-      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_YESNO');
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
     },
     del () {

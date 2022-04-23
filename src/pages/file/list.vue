@@ -1,4 +1,5 @@
 <template>
+  <!-- 档案列表 -->
   <view>
     <view class="column">
       <view
@@ -15,9 +16,6 @@
             class="item_column"
             :border="false"
           >
-            <!-- to="pages/createFile/index"
-            @click="getChildDetail(items)" -->
-            <!-- 自定义 header -->
             <view
               slot="body"
               class="slot-body"
@@ -62,7 +60,10 @@
           @click="addFile"
         >自助建档</button>
       </view>
-      <empty-column v-else />
+      <empty-column
+        v-else
+        @saveBtn="addFile"
+      />
 
     </view>
   </view>
@@ -114,7 +115,7 @@ export default {
     },
     getChildDetail (data) {
       uni.navigateTo({
-        url: `/pages/createFile/index?type=0&&items=${encodeURIComponent(JSON.stringify(data))}`,
+        url: `/pages/createFile/index?type=0&items=${encodeURIComponent(JSON.stringify(data))}`,
       })
     }
   },

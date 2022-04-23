@@ -81,6 +81,7 @@
     <button
       type="primary"
       class="submit_btn"
+      :loading="loading"
       @click="formSubmit"
     >{{type?"新 增":"修 改"}}</button>
     <button
@@ -140,6 +141,7 @@ export default {
     let lcday = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() + 3)
     return {
       type: true,
+      loading: false,
       form: {
         "archivesId": 0,//档案id
         "name": uni.getStorageSync('name'),//档案id
@@ -215,6 +217,7 @@ export default {
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
+        this.loading = true;
         let openid = uni.getStorageSync('openid');
         let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
@@ -231,7 +234,9 @@ export default {
                 title: res.message,
               })
               setTimeout(() => {
-                uni.navigateBack()
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                })
               }, 1000);
             }
           })
@@ -283,8 +288,9 @@ export default {
       await this.$store.dispatch('GET_GESTATEPLAN');
       await this.$store.dispatch('GET_PLANABORTIOMTIME');
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
-      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_YESNO');
       await this.$store.dispatch('GET_PREGNANCYREASON');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
     },
     del () {
       let archivesId = uni.getStorageSync('archivesId')
