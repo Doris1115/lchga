@@ -36,3 +36,35 @@ export const past_history = () => {
 export const present_history = () => {
   return request.globalRequest(baseUrl + 'present_history')
 }
+//目前避孕方法
+export const byMethod = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_contraception_method')
+}
+//近期孕育计划
+export const byPlan = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_inoculation_plan')
+}
+//拟流产方式 
+export const lcMethod = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_abortion_method')
+}
+//拟避孕时间
+export const byTime = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_intend_abortion_time')
+}
+//本次妊娠原因
+export const rsyy = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_pregnancy_reason')
+}
+//是否继续使用
+export const yesno = () => {
+  return request.globalRequest(baseUrl + 'yesno')
+}
+//月经量与平时比
+export const abortion_love_menstrual = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_menstrual')
+}
+// //是否继续使用
+// export const yesno = () => {
+//   return request.globalRequest(baseUrl + 'yesno')
+// }

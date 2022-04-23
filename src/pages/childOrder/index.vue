@@ -1,13 +1,27 @@
 <template>
   <view class="content">
-    <image class="logo" src="/static/image/bg02.png" v-if="column.length>0"></image>
-    <view class="wrap" v-if="column.length>0">
-      <view class="container" v-for="(item,index) in column " :key="index">
+    <image
+      class="logo"
+      src="/static/image/bg02.png"
+      v-if="column.length>0"
+    ></image>
+    <view
+      class="wrap"
+      v-if="column.length>0"
+    >
+      <view
+        class="container"
+        v-for="(item,index) in column "
+        :key="index"
+      >
         <view class="column">
           <view class="clear-fix title-column">
             <view class="title">{{item.name}}</view>
             <view class="age">{{item.age}}</view>
-            <view class="status" :class="item.status==='0'?'':item.status==='1'?'icCheck':'overTime'">{{item.status==='0'?'未检':item.status==='1'?'已检':'过期' }}</view>
+            <view
+              class="status"
+              :class="item.status==='0'?'':item.status==='1'?'icCheck':'overTime'"
+            >{{item.status==='0'?'未检':item.status==='1'?'已检':'过期' }}</view>
           </view>
           <view class="item-column clear-fix">
             <view class="item">{{item.item}}</view>
@@ -82,16 +96,16 @@ export default {
   components: {
     Empty,
   },
-  mounted() {
+  mounted () {
     this.getDetail();
   },
-  data() {
+  data () {
     return {
       column: []
     }
   },
   methods: {
-    getDetail() {
+    getDetail () {
       uni.showLoading({
         title: '加载中',
         mask: true

@@ -1,24 +1,33 @@
 <template>
   <view class="column">
-    <uni-list>
-      <uni-list-item
-        v-for="(item,index) in coulums"
-        :key="index"
-      >
-        <!-- 自定义 header -->
-        <view
-          slot="header"
-          class="slot-box"
-        >
-          {{item.title}}
-        </view>
-        <view
-          slot="body"
-          class="slot-body"
+    <uni-forms
+      :value="form"
+      :rules="rules"
+      ref="form"
+      validate-trigger="bind"
+      err-show-type="undertext"
+      class=""
+    >
+      <uni-group>
+        <uni-forms-item
+          :name="item.value"
+          :required="item.required"
+          :label="item.title"
+          :key="index"
+          v-for="(item,index) in coulums"
         >
           <input
             v-if="inputData.includes(item.value)"
             class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+            placeholder-class="placeholder"
+            :disabled="item.value=='name'"
+          />
+          <input
+            v-if="numData.includes(item.value)"
+            class="input_btn"
+            type="number"
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
@@ -28,19 +37,22 @@
             mode="selector"
             @change="bindPickerChange($event,item.value)"
             :value="form[item.value]"
-            :range="pickRange[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
             :name="item.value"
           >
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?pickRange[item.value][form[item.value]]:`请输入${item.title}`}}</view>
+            >
+              {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
+            </view>
           </picker>
           <picker
             v-else-if="pickerDate.includes(item.value)"
             mode="date"
             :name="item.value"
-            :value="form.birth"
+            :value="form.planAbortionTime"
             :start="startDate"
             :end="endDate"
             @change="bindPickerChange($event,item.value)"
@@ -50,14 +62,33 @@
               :class='{"placeholder":form[item.value]===""}'
             >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
           </picker>
-        </view>
-      </uni-list-item>
-    </uni-list>
+        </uni-forms-item>
+        <uni-forms-item
+          name="consultationFocus"
+          label="重点咨询内容"
+          class="text-area-box"
+          required
+        >
+          <uni-easyinput
+            @input="validateField"
+            type="textarea"
+            v-model="form.consultationFocus"
+            placeholder="请输入重点咨询内容"
+          />
+        </uni-forms-item>
+      </uni-group>
+    </uni-forms>
     <button
       type="primary"
       class="submit_btn"
       @click="formSubmit"
-    >保存</button>
+    >{{type?"新 增":"修 改"}}</button>
+    <button
+      type="primary"
+      class="submit_btn del "
+      @click="del"
+      v-if="!type"
+    >删除随访记录</button>
     <!-- 提示信息弹窗 -->
     <info-tip-pop
       ref="message"
@@ -69,152 +100,167 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { getTrantodangan } from '@/api/main'
-
+import { editFirstFollow, deleteFirstFollow, addFirstFollow } from '@/api/main'
+import { mapGetters } from "vuex";
 export default {
   mixins: [validate],
   components: {
     InfoTipPop
   },
   computed: {
-    startDate () {
-      return this.getDate('start');
-    },
-    endDate () {
-      return this.getDate('end');
-    },
+    ...mapGetters(["yylypsb", "yesno", "planContraceptionMethod"]),
+    pickRanges () {
+      return {
+        "contraceptionMethod": this.planContraceptionMethod,//目前避孕方法
+        "isGoUse": this.yesno,//是否继续使用 
+        "isMenstrualRecover": this.yesno,//月经是否恢复 
+        "isSexLife": this.yesno,//是否恢复性生活
+        "menstrual": this.yylypsb,//月经量与平时比
+        "replacement": this.planContraceptionMethod,//替换产品，打算更换为
+      }
+    }
   },
   mounted () {
     this.init();
+    this.getSelectItem();
+  },
+  onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+    this.type = option.type == 1 ? true : false;
+    if (option.type == 0) {
+      this.form = JSON.parse(decodeURIComponent(option.items));
+    }
   },
   data () {
     return {
+      type: true,
       form: {
-        regions: "",
-        fileType: 0,
-        sex: 0,
-        birth: "",
-        idType: "",
-        idCode: "",
-        guoji: "",
-        minzu: "",
-        huji: "",
-        hujifenlei: "",
-        hujiguishu: "",
-        phone: "",
-        whcd: "",
-        zhiye: "",
-        xianzhuzhi: "",
-        hujidizhi: "",
-        hycs: "",
-        sccs: "",
-        xbs: "",
-        jws: "",
-        jzdw: "",
+        "name": uni.getStorageSync('name'),
+        "afterAbortionBloodDay": 7,//流产后出血天数
+        "afterAbortionDayRecover": 60,//性生活流产后多少天恢复
+        "afterAbortionMenstrualRecover": 40,//月经流产后多少天恢复
+        "archivesId": uni.getStorageSync('archivesId'),
+        "consultationFocus": 0,//重点咨询内容
+        "contraceptionFeel": "",//目前避孕主要感受
+        "contraceptionMethod": 0,//目前避孕方法
+        "id": 0,
+        "isGoUse": 0,//是否继续使用
+        "isMenstrualRecover": 0,//月经是否恢复
+        "isSexLife": 0,//是否恢复性生活 
+        "menstrual": 0,//月经量与平时比
+        "replacement": 0//替换产品，打算更换为 
       },
-      inputData: ['name', 'childName', 'weight', 'idCode', 'xianzhuzhi', 'xianzhuzhi', 'phone'],
-      pickerData: ['sex', "idType", 'guoji', 'minzu', 'huji', 'hujifenlei', 'hujiguishu', 'whcd', 'hycs', 'sccs', 'zhiye', 'xbs', 'jws', 'jzdw'],
-      pickerDate: ['birth', 'childBirth'],
+      rules: {
+        consultationFocus: {
+          rules: [{
+            required: true,
+            errorMessage: ' '
+          }]
+        }
+      },
+      inputData: ['name', 'contraceptionFeel'],
+      pickerData: ['isSexLife', 'isMenstrualRecover', 'menstrual', 'contraceptionMethod', 'isGoUse', 'replacement'],
+      pickerDate: ['planAbortionTime'],
+      numData: ['afterAbortionDayRecover', 'afterAbortionMenstrualRecover', 'afterAbortionBloodDay'],
       coulums: [{
         title: "姓名",
-        value: "name"
+        value: "name",
       }, {
-        title: "性别",
-        value: "sex"
+        title: "是否恢复性生活",
+        value: "isSexLife",
       }, {
-        title: "出生年月",
-        value: "birth"
+        title: "流产后多少天恢复",
+        value: "afterAbortionDayRecover"
       }, {
-        title: "证件类型",
-        value: "idType"
+        title: "月经是否恢复",
+        value: "isMenstrualRecover",
       }, {
-        title: "证件号",
-        value: "idCode"
+        title: "流产后几天恢复",
+        value: "afterAbortionMenstrualRecover"
       }, {
-        title: "国籍",
-        value: "guoji"
+        title: "月经量与平时比",
+        value: "menstrual",
       }, {
-        title: "民族",
-        value: "minzu"
+        title: "流产后出血天数",
+        value: "afterAbortionBloodDay",
       }, {
-        title: "户籍",
-        value: "huji"
+        title: "目前避孕方式",
+        value: "contraceptionMethod",
       }, {
-        title: "户籍分类",
-        value: "hujifenlei"
+        title: "目前避孕感受",
+        value: "contraceptionFeel",
       }, {
-        title: "户籍归属",
-        value: "hujiguishu"
+        title: "是否继续使用",
+        value: "isGoUse",
       }, {
-        title: "联系方式",
-        value: "phone"
-      }, {
-        title: "文化程度",
-        value: "whcd"
-      }, {
-        title: "职业",
-        value: "zhiye"
-      }, {
-        title: "现住址",
-        value: "xianzhuzhi"
-      }, {
-        title: "户籍地址",
-        value: "hujidizhi"
-      }, {
-        title: "怀孕次数",
-        value: "hycs"
-      }, {
-        title: "生产次数",
-        value: "sccs"
-      }, {
-        title: "现病史",
-        value: "xbs"
-      }, {
-        title: "既往史",
-        value: "jws"
-      }, {
-        title: "就诊单位",
-        value: "jzdw"
+        title: "替换产品",
+        value: "replacement",
       }],
-      pickRange: {
-        idType: ['居民身份证', '港澳居民身份证', '护照', '军官证（士兵证）', '居民身份证15位', '其他'],
-        guoji: [],
-        minzu: [],
-        huji: [],
-        hujifenlei: ['农业户口', '非农业户口', '其他'],
-        hujiguishu: ['本地', '外地一年以上', '外地一年以内'],
-        whcd: ['研究生', '大学本科', '大学专科及专科学校', '中等专业学校', '技工学校', '高中', '初中', '小学', '文盲或半文盲', '其他'],
-        zhiye: [],
-        xbs: [],
-        jws: [],
-        jzdw: [],
-        sex: ['男孩', '女孩'],
-        hycs: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        sccs: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-      },
+      // , {
+      //   title: "重点咨询内容",
+      //   value: "consultationFocus",
+      // }
+
     }
   },
   methods: {
     init () {
-      // getTrantodangan({
-      // }).then(res => {
-      // })
+      if (!this.type) {
+        this.getInfoList()
+      }
+
+    },
+    getInfoList (data) {
+      console.log('data', data);
+
     },
     formSubmit () {
-      let url = ''
-      if (this.form.fileType == 0) {//孕妇建档
-        let openid = uni.getStorageSync('openid')
-        let hospital = this.pickRange.regions[this.form.regions].serverUrl
-        let hospitalid = this.pickRange.regions[this.form.regions].id
-        url = `http://wx.fybj365.com/weixin/archives/showView?url=create_archives&openid=${openid}&hospitalid=${hospitalid}&hospital=${hospital}`
+      this.$refs.form.validate().then(res => {
+        let openid = uni.getStorageSync('openid');
+        let archivesId = uni.getStorageSync('archivesId');
+        this.form.openid = openid
+        this.form.archivesId = archivesId
+        let params = Object.assign({}, this.form);
+        uni.showLoading({
+          title: '加载中'
+        });
+        if (this.type) {//新增
+          addFirstFollow(params).then(res => {
+            uni.hideLoading()
+            if (res.code) {
+              uni.showToast({
+                title: res.message,
+              })
+              setTimeout(() => {
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                })
 
-      } else if (this.form.fileType == 1) {//两癌建档
+              }, 1000);
+            }
+          })
+        } else {
+          editFirstFollow(params).then(res => {
+            uni.hideLoading()
+            if (res.code) {
+              uni.showToast({
+                title: res.message,
+              })
+              setTimeout(() => {
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                })
+              }, 1000);
+            }
+          })
 
-      }
-      window.location.href = url
+        }
+      })
     },
     formReset () {
 
+    },
+    validateField () {
+      this.$refs.form.validate()
     },
     getDate (type) {
       const date = new Date();
@@ -236,40 +282,95 @@ export default {
       // }
       this.form[v] = e.detail.value;
     },
+    async getSelectItem () {
+      await this.$store.dispatch('GET_YYLYPSB');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
+    },
+    del () {
+      let archivesId = uni.getStorageSync('archivesId')
+      deleteFirstFollow({
+        archivesId
+      }).then(res => {
+
+      })
+    }
   },
 }
 </script>
 <style lang="scss" scoped>
 .column {
   margin-top: $uni-spacing-col-lg;
+  padding-bottom: 180rpx;
 }
-.slot-box {
-  font-size: $uni-font-size-lg;
-  width: 4em;
+::v-deep .uni-group__content {
+  padding: 0 $uni-spacing-row-lg;
+  .uni-forms-item__inner {
+    padding-bottom: 0;
+    overflow: hidden;
+    border-bottom: 1px solid $uni-border-color;
+  }
+  .uni-error-message-text {
+    padding-left: 60rpx;
+  }
+}
+::v-deep .uni-forms-item__label {
+  width: 10em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
-  height: 2em;
-  line-height: 2em;
+  height: 118rpx;
+  line-height: 118rpx;
+  .label-text {
+    span {
+      font-size: $uni-font-size-lg;
+      height: 118rpx;
+      line-height: 118rpx;
+      white-space: nowrap;
+      display: block;
+      // color: $uni-text-color;
+      color: "#666";
+    }
+  }
+}
+::v-deep .uni-forms-item__content {
+  width: 520rpx;
+  height: 118rpx;
+  line-height: 118rpx;
+
+  .input_btn {
+    height: 100%;
+    font-size: $uni-font-size-lg;
+  }
 }
 .submit_btn,
 .disable_btn {
   margin: 60rpx $uni-spacing-row-lg 0;
   border-radius: 90rpx;
+  &.del {
+    border: 1px solid #dadada !important;
+    color: #dadada !important;
+  }
 }
 .disable_btn {
   margin-top: $uni-spacing-row-lg;
   border: 1px solid #dadada;
   color: #999;
 }
-.slot-body {
-  width: 520rpx;
-  height: 2em;
-  line-height: 2em;
-  .input_btn {
-    height: 100%;
+
+.placeholder {
+  color: #dadada;
+}
+::v-deep .text-area-box {
+  .uni-forms-item__content {
+    height: auto;
+    margin: 20rpx 0;
   }
 }
-.placeholder {
+::v-deep .uni-textarea-compute {
+  font-size: $uni-font-size-lg !important;
+}
+::v-deep .uni-textarea-placeholder {
+  font-size: $uni-font-size-lg !important;
   color: #dadada;
 }
 </style>

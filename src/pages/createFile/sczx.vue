@@ -1,9 +1,8 @@
 <template>
   <view class="column">
     <uni-forms
-      v-if="true"
-      :rules="rules"
       :value="form"
+      :rules="rules"
       ref="form"
       validate-trigger="bind"
       err-show-type="undertext"
@@ -20,6 +19,15 @@
           <input
             v-if="inputData.includes(item.value)"
             class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+            placeholder-class="placeholder"
+            :disabled="item.value=='name'"
+          />
+          <input
+            v-if="numData.includes(item.value)"
+            class="input_btn"
+            type="number"
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
@@ -41,26 +49,10 @@
             </view>
           </picker>
           <picker
-            v-else-if="numData.includes(item.value)"
-            mode="selector"
-            @change="bindPickerChange($event,item.value)"
-            :value="form[item.value]"
-            :range="pickRanges[item.value]"
-            range-key="title"
-            :name="item.value"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >
-              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
-            </view>
-          </picker>
-          <picker
             v-else-if="pickerDate.includes(item.value)"
             mode="date"
             :name="item.value"
-            :value="form.birthday"
+            :value="form.planAbortionTime"
             :start="startDate"
             :end="endDate"
             @change="bindPickerChange($event,item.value)"
@@ -70,6 +62,19 @@
               :class='{"placeholder":form[item.value]===""}'
             >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
           </picker>
+        </uni-forms-item>
+        <uni-forms-item
+          name="consultationFocus"
+          label="重点咨询内容"
+          class="text-area-box"
+          required
+        >
+          <uni-easyinput
+            @input="validateField"
+            type="textarea"
+            v-model="form.consultationFocus"
+            placeholder="请输入重点咨询内容"
+          />
         </uni-forms-item>
       </uni-group>
     </uni-forms>
@@ -95,18 +100,15 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, editArchives, queryArchivesList, queryAreaList } from '@/api/main'
+import { addFirstConsultation, editFirstConsultation, deleteFirstConsultation } from '@/api/main'
 import { mapGetters } from "vuex";
-import { validateMobile } from "@/utils/verify.js"
 export default {
   mixins: [validate],
   components: {
     InfoTipPop
   },
-  watch: {
-  },
   computed: {
-    ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
+    ...mapGetters(["gestatePlan", "planAbortionTime", "planContraceptionMethod", "planContraceptionTime", "pregnancyReason"]),
     startDate () {
       return this.getDate('start');
     },
@@ -115,32 +117,18 @@ export default {
     },
     pickRanges () {
       return {
-        nationality: this.nationality,
-        certType: this.certType,
-        domicileType: this.domicileType,
-        education: this.education,
-        ethnic: this.ethnic,
-        homeRegist: this.homeRegist,
-        occupation: this.occupation,
-        pastHistory: this.pastHistory,
-        presentHistory: this.presentHistory,
-        gender: [{
-          text: "女孩",
-          title: "女孩",
-          value: "10"
-        }, {
-          text: "男孩",
-          title: "男孩",
-          value: "21"
-        }],
-        childbirthCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        pregnancyCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "contraceptionMethod": this.planContraceptionMethod,//目前避孕方法
+        "gestatePlan": this.gestatePlan,//近期孕育计划 
+        "planAbortionManner": this.planAbortionTime,//拟流产方式 
+        "planContraceptionMethod": this.planContraceptionMethod,//拟避孕方法
+        "pregnancyReason": this.pregnancyReason,//本次妊娠原因
+        "planContraceptionTime": this.planContraceptionTime,//拟避孕时间
       }
     }
   },
   mounted () {
-    this.getSelectItem();
     this.init();
+    this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.type = option.type == 1 ? true : false;
@@ -149,90 +137,68 @@ export default {
     }
   },
   data () {
+    let lcday = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() + 3)
     return {
       type: true,
+      form: {
+        "archivesId": 0,//档案id
+        "name": uni.getStorageSync('name'),//档案id
+        "consultationFocus": "",//重点咨询内容
+        "contraceptionMethod": 0,//目前避孕方法
+        "gestatePlan": 0,//近期孕育计划 
+        "id": 0,
+        "planAbortionManner": 0,//拟流产方式 
+        "planAbortionTime": lcday,//拟流产日期
+        "planContraceptionMethod": 0,//拟避孕方法
+        "planContraceptionTime": 0,//拟避孕时间
+        "pregnancyReason": 0,//本次妊娠原因
+        "stopMensesDayCount": 30//停经天数
+      },
       rules: {
-        name: {
+        consultationFocus: {
           rules: [{
             required: true,
-            errorMessage: '姓名不能为空'
-          },
-          {
-            minLength: 3,
-            maxLength: 15,
-            errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符'
-          }
-          ]
-        },
-        birthday: {
-          rules: [{
-            required: true,
-            errorMessage: '出生年月不能为空'
-          }]
-        },
-        certNumber: {
-          rules: [{
-            required: true,
-            errorMessage: '证件号不能为空'
-          }]
-        },
-        phone: {
-          rules: [{
-            required: true,
-            errorMessage: '联系方式不能为空'
-          }, {
-            validateFunction: validateMobile,
+            errorMessage: ' '
           }]
         }
       },
-      form: {
-        "archivesId": 0,//档案id
-        "consultationFocus": "",//重点咨询内容
-        "contraceptionMethod": "",//目前避孕方法
-        "gestatePlan": "",//近期孕育计划 
-        "id": 0,
-        "planAbortionManner": "",//拟流产方式 
-        "planAbortionTime": "",//拟流产日期
-        "planContraceptionMethod": "",//拟避孕方法
-        "planContraceptionTime": "",//拟避孕时间
-        "pregnancyReason": "",//本次妊娠原因
-        "stopMensesDayCount": 0//停经天数
-      },
-      inputData: ['name', 'accountAddressText', 'homeAddressDetail', 'accountAddressDetail', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
-      pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
-      pickerDate: ['birthday', 'childBirth'],
-      numData: ['pregnancyCount', 'childbirthCount',],
+      inputData: ['name',],
+      pickerData: ['contraceptionMethod', 'pregnancyReason', 'gestatePlan', 'planAbortionManner', 'planContraceptionMethod', 'planContraceptionTime'],
+      pickerDate: ['planAbortionTime'],
+      numData: ['stopMensesDayCount',],
       coulums: [{
         title: "姓名",
         value: "name",
-        required: true
       }, {
         title: "近期孕育计划",
         value: "gestatePlan",
-        required: true
       }, {
         title: "本次妊娠原因",
         value: "pregnancyReason",
         required: true
       }, {
+        title: "目前避孕方法",
+        value: "contraceptionMethod"
+      }, {
         title: "停经天数",
-        value: "stopMensesDayCount"
+        value: "stopMensesDayCount",
+        required: true
       }, {
         title: "拟流产日期",
         value: "planAbortionTime",
         required: true
       }, {
         title: "拟流产方式",
-        value: "planAbortionManner"
+        value: "planAbortionManner",
+        required: true
       }, {
         title: "拟避孕方法",
-        value: "planContraceptionMethod"
+        value: "planContraceptionMethod",
+        required: true
       }, {
         title: "拟避孕时间",
-        value: "planContraceptionTime"
-      }, {
-        title: "重点咨询内容",
-        value: "consultationFocus"
+        value: "planContraceptionTime",
+        required: true
       }],
     }
   },
@@ -250,53 +216,48 @@ export default {
     formSubmit () {
       this.$refs.form.validate().then(res => {
         let openid = uni.getStorageSync('openid');
+        let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
+        this.form.archivesId = archivesId
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'
         });
-        if (type) {
-          addArchives(params).then(res => {
+        if (this.type) {//新增
+          addFirstConsultation(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
-                uni.switchTab({
-                  url: "/pages/file/list"
-                })
+                uni.navigateBack()
               }, 1000);
             }
           })
         } else {
-          editArchives(params).then(res => {
+          editFirstConsultation(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
-                uni.switchTab({
-                  url: "/pages/file/list"
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
                 })
               }, 1000);
             }
           })
 
         }
-
-      }).catch(err => {
-        uni.showToast({
-          title: err[0].errorMessage,
-        })
-      }
-
-      )
-
+      })
     },
     formReset () {
 
+    },
+    validateField () {
+      this.$refs.form.validate()
     },
     getDate (type) {
       const date = new Date();
@@ -318,12 +279,20 @@ export default {
       // }
       this.form[v] = e.detail.value;
     },
-    handleInput (e) {
-      if (!e.detail) {
-        uni.showToast({
-          title: "222"
-        })
-      }
+    async getSelectItem () {
+      await this.$store.dispatch('GET_GESTATEPLAN');
+      await this.$store.dispatch('GET_PLANABORTIOMTIME');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_PREGNANCYREASON');
+    },
+    del () {
+      let archivesId = uni.getStorageSync('archivesId')
+      deleteFirstConsultation({
+        archivesId
+      }).then(res => {
+
+      })
     }
   },
 }
@@ -345,7 +314,7 @@ export default {
   }
 }
 ::v-deep .uni-forms-item__label {
-  width: 6em !important;
+  width: 8em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
   height: 118rpx;
@@ -388,6 +357,19 @@ export default {
 }
 
 .placeholder {
+  color: #dadada;
+}
+::v-deep .text-area-box {
+  .uni-forms-item__content {
+    height: auto;
+    margin: 20rpx 0;
+  }
+}
+::v-deep .uni-textarea-compute {
+  font-size: $uni-font-size-lg !important;
+}
+::v-deep .uni-textarea-placeholder {
+  font-size: $uni-font-size-lg !important;
   color: #dadada;
 }
 </style>

@@ -31,7 +31,7 @@ export const queryFollowList = (data) => {
 }
 //首次咨询  添加首次咨询
 export const addFirstConsultation = (data) => {
-  return request.globalRequest(baseUrl + '/mobile/firstConsultation/addFirstConsultation', data)
+  return request.globalPostRequest(baseUrl + '/mobile/firstConsultation/addFirstConsultation', data)
 }
 //编辑首次咨询
 export const editFirstConsultation = (data) => {
@@ -39,7 +39,7 @@ export const editFirstConsultation = (data) => {
 }
 //通过id删除
 export const deleteFirstConsultation = (data) => {
-  return request.globalPostRequest(baseUrl + '/mobile/firstConsultation/deleteFirstConsultation', data)
+  return request.globalRequest(baseUrl + '/mobile/firstConsultation/deleteFirstConsultation', data)
 }
 //首次随访新增
 export const addFirstFollow = (data) => {

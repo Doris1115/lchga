@@ -1,7 +1,6 @@
 <template>
   <view class="column">
     <uni-forms
-      v-if="true"
       :rules="rules"
       :value="form"
       ref="form"
@@ -22,6 +21,8 @@
             class="input_btn"
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
+            @blur="validate"
+            @input="validate"
             placeholder-class="placeholder"
           />
           <picker
@@ -96,22 +97,12 @@
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
 import { addArchives, editArchives } from '@/api/main'
-import { Set_Nationality, Set_CertType, Set_Ethnic, Set_DomicileType, Set_HomeRegist, Set_Education, Set_Occupation, Set_PresentHistory, Set_PastHistory } from '@/utils/nav'
 import { mapGetters } from "vuex";
 import { validateMobile } from "@/utils/verify.js"
 export default {
   mixins: [validate],
   components: {
     InfoTipPop
-  },
-  watch: {
-    // 'form': {
-    //   handler (val) {
-    //     this.$refs.form.validate()
-    //   },
-    //   immediate: true,
-    //   deep: true,
-    // }
   },
   computed: {
     ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
@@ -197,7 +188,7 @@ export default {
         "accountAddressCode": "",//户口地址code
         "accountAddressDetail": "",//户口地址详情
         "accountAddressText": "",//户口地址名称
-        "birthday": "",//出生日期
+        "birthday": "1990-01-01",//出生日期
         "certNumber": "",//证件号码
         "certType": "2",//证件类型
         "childbirthCount": 0,//产次
@@ -266,7 +257,7 @@ export default {
       }, {
         title: "联系方式",
         value: "phone",
-        required: true
+        // required: true
       }, {
         title: "文化程度",
         value: "education"
@@ -308,7 +299,6 @@ export default {
       if (!this.type) {
         this.getInfoList()
       }
-      this.getParams()
 
     },
     transfer (v) {
@@ -326,7 +316,7 @@ export default {
         uni.showLoading({
           title: '加载中'
         });
-        if (type) {
+        if (this.type) {
           addArchives(params).then(res => {
             uni.hideLoading()
             if (res.code) {
@@ -390,6 +380,7 @@ export default {
       this.form[v] = e.detail.value;
     },
     async getSelectItem () {
+
       await this.$store.dispatch('GET_NATIONALITY');
       await this.$store.dispatch('GET_CERTTYPE');
       await this.$store.dispatch('GET_EDUCATION');
@@ -407,6 +398,9 @@ export default {
           title: "222"
         })
       }
+    },
+    validate (val) {
+      this.$refs.form.validate()
     }
   },
 }

@@ -1,9 +1,8 @@
 <template>
   <view class="column">
     <uni-forms
-      v-if="true"
-      :rules="rules"
       :value="form"
+      :rules="rules"
       ref="form"
       validate-trigger="bind"
       err-show-type="undertext"
@@ -20,6 +19,15 @@
           <input
             v-if="inputData.includes(item.value)"
             class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请输入'+item.title"
+            placeholder-class="placeholder"
+            :disabled="item.value=='name'"
+          />
+          <input
+            v-if="numData.includes(item.value)"
+            class="input_btn"
+            type="number"
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
@@ -41,26 +49,10 @@
             </view>
           </picker>
           <picker
-            v-else-if="numData.includes(item.value)"
-            mode="selector"
-            @change="bindPickerChange($event,item.value)"
-            :value="form[item.value]"
-            :range="pickRanges[item.value]"
-            range-key="title"
-            :name="item.value"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >
-              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
-            </view>
-          </picker>
-          <picker
             v-else-if="pickerDate.includes(item.value)"
             mode="date"
             :name="item.value"
-            :value="form.birthday"
+            :value="form.planAbortionTime"
             :start="startDate"
             :end="endDate"
             @change="bindPickerChange($event,item.value)"
@@ -70,6 +62,19 @@
               :class='{"placeholder":form[item.value]===""}'
             >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
           </picker>
+        </uni-forms-item>
+        <uni-forms-item
+          name="consultationFocus"
+          label="重点咨询内容"
+          class="text-area-box"
+          required
+        >
+          <uni-easyinput
+            @input="validateField"
+            type="textarea"
+            v-model="form.consultationFocus"
+            placeholder="请输入重点咨询内容"
+          />
         </uni-forms-item>
       </uni-group>
     </uni-forms>
@@ -95,52 +100,29 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, editArchives, queryArchivesList, queryAreaList } from '@/api/main'
+import { editFirstFollow, deleteFirstFollow, addFirstFollow } from '@/api/main'
 import { mapGetters } from "vuex";
-import { validateMobile } from "@/utils/verify.js"
 export default {
   mixins: [validate],
   components: {
     InfoTipPop
   },
-  watch: {
-  },
   computed: {
-    ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
-    startDate () {
-      return this.getDate('start');
-    },
-    endDate () {
-      return this.getDate('end');
-    },
+    ...mapGetters(["yylypsb", "yesno", "planContraceptionMethod"]),
     pickRanges () {
       return {
-        nationality: this.nationality,
-        certType: this.certType,
-        domicileType: this.domicileType,
-        education: this.education,
-        ethnic: this.ethnic,
-        homeRegist: this.homeRegist,
-        occupation: this.occupation,
-        pastHistory: this.pastHistory,
-        presentHistory: this.presentHistory,
-        gender: [{
-          text: "女孩",
-          title: "女孩",
-          value: "10"
-        }, {
-          text: "男孩",
-          title: "男孩",
-          value: "21"
-        }],
-        childbirthCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        pregnancyCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "contraceptionMethod": this.planContraceptionMethod,//目前避孕方法
+        "isGoUse": this.yesno,//是否继续使用 
+        "isMenstrualRecover": this.yesno,//月经是否恢复 
+        "isSexLife": this.yesno,//是否恢复性生活
+        "menstrual": this.yylypsb,//月经量与平时比
+        "replacement": this.planContraceptionMethod,//替换产品，打算更换为
       }
     }
   },
   mounted () {
-    this.getSelectItem();
     this.init();
+    this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.type = option.type == 1 ? true : false;
@@ -151,140 +133,73 @@ export default {
   data () {
     return {
       type: true,
+      form: {
+        "name": uni.getStorageSync('name'),
+        "afterAbortionBloodDay": 7,//流产后出血天数
+        "afterAbortionDayRecover": 60,//性生活流产后多少天恢复
+        "afterAbortionMenstrualRecover": 40,//月经流产后多少天恢复
+        "archivesId": uni.getStorageSync('archivesId'),
+        "consultationFocus": 0,//重点咨询内容
+        "contraceptionFeel": "",//目前避孕主要感受
+        "contraceptionMethod": 0,//目前避孕方法
+        "id": 0,
+        "isGoUse": 0,//是否继续使用
+        "isMenstrualRecover": 0,//月经是否恢复
+        "isSexLife": 0,//是否恢复性生活 
+        "menstrual": 0,//月经量与平时比
+        "replacement": 0//替换产品，打算更换为 
+      },
       rules: {
-        name: {
+        consultationFocus: {
           rules: [{
             required: true,
-            errorMessage: '姓名不能为空'
-          },
-          {
-            minLength: 3,
-            maxLength: 15,
-            errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符'
-          }
-          ]
-        },
-        birthday: {
-          rules: [{
-            required: true,
-            errorMessage: '出生年月不能为空'
-          }]
-        },
-        certNumber: {
-          rules: [{
-            required: true,
-            errorMessage: '证件号不能为空'
-          }]
-        },
-        phone: {
-          rules: [{
-            required: true,
-            errorMessage: '联系方式不能为空'
-          }, {
-            validateFunction: validateMobile,
+            errorMessage: ' '
           }]
         }
       },
-      form: {
-        "accountAddressCode": "",//户口地址code
-        "accountAddressDetail": "",//户口地址详情
-        "accountAddressText": "",//户口地址名称
-        "birthday": "",//出生日期
-        "certNumber": "",//证件号码
-        "certType": "2",//证件类型
-        "childbirthCount": 0,//产次
-        "consultationUnit": "1246789",//就诊单位id
-        "consultationUnitName": "",//就诊单位名称
-        "domicileType": 1,//户籍分类
-        "education": 1,//文化程度
-        "ethnic": 1,//民族 
-        "gender": "0",//性别 
-        "homeAddressCode": "",//现住地址
-        "homeAddressDetail": "",//现住地址详情
-        "homeAddressText": "",//现住地址名称
-        "homeRegist": 1,//户籍归属
-        "id": "",//
-        "name": "",//姓名
-        "nationality": 43,//国籍
-        "occupation": 1,//职业
-        "openid": "",
-        "pastHistory": 0,//既往史
-        "phone": "",//电话
-        "pregnancyCount": 0,//孕次
-        "presentHistory": 0,//现病史
-        "workUnit": "",//工作单位
-      },
-      inputData: ['name', 'accountAddressText', 'homeAddressDetail', 'accountAddressDetail', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
-      pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
-      pickerDate: ['birthday', 'childBirth'],
-      numData: ['pregnancyCount', 'childbirthCount',],
+      inputData: ['name', 'contraceptionFeel'],
+      pickerData: ['isSexLife', 'isMenstrualRecover', 'menstrual', 'contraceptionMethod', 'isGoUse', 'replacement'],
+      pickerDate: ['planAbortionTime'],
+      numData: ['afterAbortionDayRecover', 'afterAbortionMenstrualRecover', 'afterAbortionBloodDay'],
       coulums: [{
         title: "姓名",
         value: "name",
-        required: true
       }, {
-        title: "性别",
-        value: "gender",
-        required: true
+        title: "是否恢复性生活",
+        value: "isSexLife",
       }, {
-        title: "出生年月",
-        value: "birthday",
-        required: true
+        title: "流产后多少天恢复",
+        value: "afterAbortionDayRecover"
       }, {
-        title: "证件类型",
-        value: "certType"
+        title: "月经是否恢复",
+        value: "isMenstrualRecover",
       }, {
-        title: "证件号",
-        value: "certNumber",
-        required: true
+        title: "流产后几天恢复",
+        value: "afterAbortionMenstrualRecover"
       }, {
-        title: "国籍",
-        value: "nationality"
+        title: "月经量与平时比",
+        value: "menstrual",
       }, {
-        title: "民族",
-        value: "ethnic"
+        title: "流产后出血天数",
+        value: "afterAbortionBloodDay",
       }, {
-        title: "户籍",
-        value: "accountAddressText"
+        title: "目前避孕方式",
+        value: "contraceptionMethod",
       }, {
-        title: "户籍分类",
-        value: "domicileType"
+        title: "目前避孕感受",
+        value: "contraceptionFeel",
       }, {
-        title: "户籍归属",
-        value: "homeRegist"
+        title: "是否继续使用",
+        value: "isGoUse",
       }, {
-        title: "联系方式",
-        value: "phone",
-        required: true
-      }, {
-        title: "文化程度",
-        value: "education"
-      }, {
-        title: "职业",
-        value: "occupation"
-      }, {
-        title: "现住址",
-        value: "homeAddressDetail"
-      }, {
-        title: "户籍地址",
-        value: "accountAddressDetail"
-      }, {
-        title: "怀孕次数",
-        value: "pregnancyCount"
-      }, {
-        title: "生产次数",
-        value: "childbirthCount"
-      }, {
-        title: "现病史",
-        value: "presentHistory"
-      }, {
-        title: "既往史",
-        value: "pastHistory"
-      }, {
-        title: "就诊单位",
-        value: "consultationUnit",
-        required: true
+        title: "替换产品",
+        value: "replacement",
       }],
+      // , {
+      //   title: "重点咨询内容",
+      //   value: "consultationFocus",
+      // }
+
     }
   },
   methods: {
@@ -301,53 +216,51 @@ export default {
     formSubmit () {
       this.$refs.form.validate().then(res => {
         let openid = uni.getStorageSync('openid');
+        let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
+        this.form.archivesId = archivesId
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'
         });
-        if (type) {
-          addArchives(params).then(res => {
+        if (this.type) {//新增
+          addFirstFollow(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
-                uni.switchTab({
-                  url: "/pages/file/list"
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
                 })
+
               }, 1000);
             }
           })
         } else {
-          editArchives(params).then(res => {
+          editFirstFollow(params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
-                uni.switchTab({
-                  url: "/pages/file/list"
+                uni.navigateTo({
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
                 })
               }, 1000);
             }
           })
 
         }
-
-      }).catch(err => {
-        uni.showToast({
-          title: err[0].errorMessage,
-        })
-      }
-
-      )
-
+      })
     },
     formReset () {
 
+    },
+    validateField () {
+      this.$refs.form.validate()
     },
     getDate (type) {
       const date = new Date();
@@ -370,23 +283,17 @@ export default {
       this.form[v] = e.detail.value;
     },
     async getSelectItem () {
-      await this.$store.dispatch('GET_NATIONALITY');
-      await this.$store.dispatch('GET_CERTTYPE');
-      await this.$store.dispatch('GET_EDUCATION');
-      await this.$store.dispatch('GET_DOMICILETYPE');
-      await this.$store.dispatch('GET_ETHNIC');
-      await this.$store.dispatch('GET_HOMEREGIST');
-      await this.$store.dispatch('GET_OCCUPATION');
-      await this.$store.dispatch('GET_PASTHISTORY');
-      await this.$store.dispatch('GET_PRESENTHISTORY');
+      await this.$store.dispatch('GET_YYLYPSB');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
     },
-    handleInput (e) {
-      let a = e.detail
-      if (!e.detail) {
-        uni.showToast({
-          title: "222"
-        })
-      }
+    del () {
+      let archivesId = uni.getStorageSync('archivesId')
+      deleteFirstFollow({
+        archivesId
+      }).then(res => {
+
+      })
     }
   },
 }
@@ -408,7 +315,7 @@ export default {
   }
 }
 ::v-deep .uni-forms-item__label {
-  width: 6em !important;
+  width: 10em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
   height: 118rpx;
@@ -451,6 +358,19 @@ export default {
 }
 
 .placeholder {
+  color: #dadada;
+}
+::v-deep .text-area-box {
+  .uni-forms-item__content {
+    height: auto;
+    margin: 20rpx 0;
+  }
+}
+::v-deep .uni-textarea-compute {
+  font-size: $uni-font-size-lg !important;
+}
+::v-deep .uni-textarea-placeholder {
+  font-size: $uni-font-size-lg !important;
   color: #dadada;
 }
 </style>

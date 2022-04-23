@@ -57,32 +57,28 @@
       "path": "pages/createFile/sczx",
       "style": {
         //首次咨询
-        "navigationBarTitleText": "首次咨询",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "首次咨询"
       }
     },
     {
       "path": "pages/createFile/scsf",
       "style": {
         //首次随访
-        "navigationBarTitleText": "首次随访",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "首次随访"
       }
     },
     {
       "path": "pages/createFile/sfxq",
       "style": {
         //随访详情
-        "navigationBarTitleText": "随访详情",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "随访详情"
       }
     },
     {
       "path": "pages/info/babyInfoItem",
       "style": {
         //单独宝宝信息
-        "navigationBarTitleText": "宝宝信息",
-        "enablePullDownRefresh": true
+        "navigationBarTitleText": "宝宝信息"
       }
     },
     {

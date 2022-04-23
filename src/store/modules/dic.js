@@ -7,7 +7,14 @@ import {
   hukouguishu,//户籍归属
   renqunfenleizhiye,//职业
   past_history,//既往史
-  present_history//现病史
+  present_history,//现病史
+  byMethod,//目前避孕方法
+  byPlan,//近期孕育计划
+  lcMethod,//拟流产方式
+  byTime,//拟避孕时间
+  rsyy,//本次妊娠原因
+  yesno,//本次妊娠原因
+  abortion_love_menstrual,//本次妊娠原因
 } from '@/api/dic'
 
 const dic = {
@@ -20,7 +27,14 @@ const dic = {
     homeRegist: [],//户籍归属
     occupation: [],//职业
     pastHistory: [],//既往史
+    gestatePlan: [],//近期孕育计划
+    planAbortionTime: [],//拟流产方式
+    planContraceptionMethod: [],//拟避孕方法
+    planContraceptionTime: [],//拟避孕时间
+    pregnancyReason: [],//妊娠原因
     presentHistory: [],//现病史
+    yesno: [],//是否继续使用
+    yylypsb: [],//月经量与平时比
   },
   mutations: {
     Set_Nationality (state, nationality) {
@@ -49,6 +63,28 @@ const dic = {
     },
     Set_PresentHistory (state, value) {
       state.presentHistory = value
+    },
+
+    Set_GestatePlan (state, value) {
+      state.gestatePlan = value
+    },
+    Set_PlanAbortionTime (state, value) {
+      state.planAbortionTime = value
+    },
+    Set_PlanContraceptionMethod (state, value) {
+      state.planContraceptionMethod = value
+    },
+    Set_PlanContraceptionTime (state, value) {
+      state.planContraceptionTime = value
+    },
+    Set_PregnancyReason (state, value) {
+      state.pregnancyReason = value
+    },
+    Set_Yesno (state, value) {
+      state.yesno = value
+    },
+    Set_YYLYPSJ (state, value) {
+      state.yylypsb = value
     },
   },
   actions: {
@@ -120,6 +156,63 @@ const dic = {
       return new Promise(res => {
         present_history().then(resolve => {
           dic.state.presentHistory.length > 0 || commit('Set_PresentHistory', resolve.result)
+          res();
+        });
+      })
+    },
+
+    GET_GESTATEPLAN: ({ commit }) => {
+      return new Promise(res => {
+        byPlan().then(resolve => {
+          dic.state.gestatePlan.length > 0 || commit('Set_GestatePlan', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_PLANABORTIOMTIME: ({ commit }) => {
+      return new Promise(res => {
+        lcMethod().then(resolve => {
+          dic.state.planAbortionTime.length > 0 || commit('Set_PlanAbortionTime', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_PLANCONTRACEPTIONMETHOD: ({ commit }) => {
+      return new Promise(res => {
+        byMethod().then(resolve => {
+          dic.state.planContraceptionMethod.length > 0 || commit('Set_PlanContraceptionMethod', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_PLANCONTRACEPTIOMTIME: ({ commit }) => {
+      return new Promise(res => {
+        byTime().then(resolve => {
+          dic.state.planContraceptionTime.length > 0 || commit('Set_PlanContraceptionTime', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_PREGNANCYREASON: ({ commit }) => {
+      return new Promise(res => {
+        rsyy().then(resolve => {
+          dic.state.pregnancyReason.length > 0 || commit('Set_PregnancyReason', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_PLANCONTRACEPTIOMTIME: ({ commit }) => {
+      return new Promise(res => {
+        yesno().then(resolve => {
+          dic.state.yesno.length > 0 || commit('Set_Yesno', resolve.result)
+          res();
+        });
+      })
+    },
+    GET_YYLYPSB: ({ commit }) => {
+      return new Promise(res => {
+        abortion_love_menstrual().then(resolve => {
+          dic.state.yylypsb.length > 0 || commit('Set_YYLYPSJ', resolve.result)
           res();
         });
       })

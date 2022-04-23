@@ -5,10 +5,12 @@
         <uni-list
           class="column_baby"
           :border="false"
+          v-if="firstConsultation"
         >
           <uni-list-item
             class="item_column"
-            to="/pages/createFile/sczx"
+            :to="`/pages/createFile/sczx?type=0&items=${encodeURIComponent(JSON.stringify(firstConsultation))}`"
+            v-if="firstConsultation"
           >
             <view
               slot="body"
@@ -29,7 +31,7 @@
                       <view class="demo-uni-col dark">近期孕育计划</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">0</view>
+                      <view class="demo-uni-col light">{{firstConsultation.gestatePlan}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -39,18 +41,19 @@
                       <view class="demo-uni-col dark">本次妊娠原因</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">0</view>
+                      <view class="demo-uni-col light">{{firstConsultation.pregnancyReason}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
               </uni-row>
               <view class="status">2022-03-23</view>
-              <navigator class="sf-list">查看详情</navigator>
+              <view class="sf-list">查看详情</view>
             </view>
           </uni-list-item>
           <uni-list-item
             class="item_column"
-            to="/pages/createFile/scsf"
+            :to="`/pages/createFile/scsf?type=0&items=${encodeURIComponent(JSON.stringify(firstFollow))}`"
+            v-if="firstFollow"
           >
             <view
               slot="body"
@@ -71,7 +74,7 @@
                       <view class="demo-uni-col dark">&nbsp;恢复性生活&nbsp;</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">0</view>
+                      <view class="demo-uni-col light">{{firstFollow.isSexLife?"是":"否"}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -81,7 +84,7 @@
                       <view class="demo-uni-col dark">&nbsp;恢&nbsp;复&nbsp;月&nbsp;经&nbsp;</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">0</view>
+                      <view class="demo-uni-col light">{{firstFollow.isMenstrualRecover?"是":"否"}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -95,7 +98,7 @@
             :key="index"
             class="item_column"
             :border="false"
-            to="/pages/createFile/sfxq"
+            :to="`/pages/createFile/sfxq?type=0&items=${encodeURIComponent(JSON.stringify(items))}`"
           >
             <view
               slot="body"
@@ -144,25 +147,42 @@
   </view>
 </template>
 <script>
-import { getChiTrasfer } from '@/api/main'
+import { queryFollowList } from '@/api/main'
 
 export default {
   data () {
     return {
       empty_icon: "/static/icons/empty.png",
       coulums: [],
+      name: "",
       dic: {
         type: `  随 诊 方 式 `,
         sfywhy: "再次意外妊娠",
-      }
+      },
+      firstConsultation: {},
+      firstFollow: {},
     }
   },
   mounted () {
     this.getBabyInfo();
   },
+  onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+    this.type = option.type == 1 ? true : false;
+    this.name = option.name
+    this.archivesId = option.archivesId
+    uni.setStorageSync("name", option.name)
+    uni.setStorageSync("archivesId", option.archivesId)
+    if (option.type == 0) {
+      this.form = JSON.parse(decodeURIComponent(option.items));
+    }
+  },
   methods: {
     getBabyInfo () {
-      getChiTrasfer({}).then(res => {
+      queryFollowList({
+        archivesId: this.archivesId
+      }).then(res => {
+        this.firstConsultation = res.result.firstConsultation;
+        this.firstFollow = res.result.firstFollow;
         // this.coulums = [{
         //   title: "三月随访",
         //   type: "1",
@@ -177,8 +197,14 @@ export default {
       })
     },
     addSfRecord (data) {
+      let url = `/pages/createFile/sczx?type=1`;
+      if (this.firstConsultation && !this.firstFollow) {
+        url = "/pages/createFile/scsf?type=1"
+      } else if (this.firstConsultation && this.firstFollow) {
+        url = "/pages/createFile/sfxq?type=1"
+      }
       uni.navigateTo({
-        url: `/pages/createFile/sczx?type=1`
+        url
       })
     },
     getChildDetail (data) {
@@ -218,7 +244,7 @@ export default {
       position: absolute;
       right: 0;
       bottom: 10rpx;
-      z-index: 999;
+      z-index: 1;
       font-size: $uni-font-size-sm;
       // background: red;
       text-align: right;

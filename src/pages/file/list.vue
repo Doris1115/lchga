@@ -48,7 +48,7 @@
               >{{items.domicileType=="0"?"已建档":"已结案"}}</view>
               <navigator
                 class="sf-list"
-                url="/pages/sfList/index"
+                :url="'/pages/sfList/index?name='+items.name+'&archivesId='+items.id"
                 @click.stop=""
               >随访 ></navigator>
             </view>
@@ -56,37 +56,25 @@
           </uni-list-item>
         </uni-list>
         <button
-          type="primary"
+          type="
+                primary"
           class="submit_btn"
           @click="addFile"
         >自助建档</button>
       </view>
-      <view
-        class="empty"
-        v-else
-      >
-        <image
-          :src="empty_icon"
-          mode="aspectFit"
-          class="empty_image"
-        > </image>
-        <p class="text">您还没有添加档案信息</p>
-        <button
-          type="primary"
-          size="mini"
-          plain
-          class="submit_btn02"
-          @click="addFile"
-        >添加档案</button>
-      </view>
+      <empty-column v-else />
 
     </view>
   </view>
 </template>
 <script>
 import { queryArchivesList } from '@/api/main'
+import EmptyColumn from "@/pages/components/emptyColumn"
 
 export default {
+  components: {
+    EmptyColumn,
+  },
   data () {
     return {
       empty_icon: "/static/icons/empty.png",
@@ -147,7 +135,7 @@ export default {
       position: absolute;
       right: 0;
       top: 10rpx;
-      z-index: 99;
+      z-index: 9;
       color: $uni-text-color-grey;
       border: 1px solid $uni-text-color-grey;
       padding: 0 $uni-spacing-col-base;
@@ -164,7 +152,7 @@ export default {
       position: absolute;
       right: 0;
       bottom: 0rpx;
-      z-index: 999;
+      z-index: 9;
       color: $uni-color-base;
       font-size: $uni-font-size-sm;
       // background: red;
@@ -181,29 +169,6 @@ export default {
   &::before,
   &::after {
     height: 0px !important;
-  }
-}
-.empty {
-  text-align: center;
-  overflow: hidden;
-  .submit_btn02 {
-    margin: auto;
-    color: $uni-color-base !important;
-    border: 1px solid $uni-color-base !important;
-  }
-  .text {
-    color: $uni-text-color;
-    font-size: $uni-font-size-base;
-    text-align: center;
-    margin-top: 48rpx;
-    margin-bottom: 32rpx;
-  }
-  .empty_image {
-    width: 320rpx;
-    height: 320rpx;
-    margin: auto;
-    display: block;
-    margin-top: 168rpx;
   }
 }
 </style>
