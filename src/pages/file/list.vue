@@ -84,7 +84,7 @@
   </view>
 </template>
 <script>
-import { getChiTrasfer } from '@/api/main'
+import { queryArchivesList } from '@/api/main'
 
 export default {
   data () {
@@ -99,22 +99,24 @@ export default {
     }
   },
   mounted () {
-    this.getBabyInfo();
+    this.getInfoList();
   },
   methods: {
-    getBabyInfo () {
-      getChiTrasfer({}).then(res => {
-        this.coulums = [{
-          addUnitName: "台州卫健委",
-          name: "王丽丽",
-          consultationTime: "2022-04-18",
-          domicileType: "1",
-        }, {
-          addUnitName: "台州卫健委",
-          name: "张嘉颖",
-          consultationTime: "2022-04-18",
-          domicileType: "0",
-        }]
+    getInfoList () {
+      let openid = uni.getStorageSync('openid');
+      queryArchivesList({ openid }).then(res => {
+        if (res.code) {
+          this.coulums = []
+          res.result.map(v => {
+            this.coulums.push({
+              ...v,
+              addUnitName: v.treatmentUnitName,
+              name: v.name,
+              consultationTime: v.createDate,
+              domicileType: v.domicileType,
+            })
+          })
+        }
       })
     },
     addFile (data) {
@@ -124,13 +126,16 @@ export default {
     },
     getChildDetail (data) {
       uni.navigateTo({
-        url: `/pages/createFile/index?type=0`
+        url: `/pages/createFile/index?type=0&&items=${encodeURIComponent(JSON.stringify(data))}`,
       })
     }
   },
 }
 </script>
 <style lang="scss" scoped>
+.column {
+  padding-bottom: 180rpx;
+}
 .column_baby {
   @extend .layer-contain;
   background: none;

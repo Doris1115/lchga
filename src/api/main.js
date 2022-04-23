@@ -18,8 +18,8 @@ export const deleteArchives = (data) => {
   return request.globalRequest(baseUrl + '/mobile/archives/deleteArchives', data)
 }
 //编辑档案
-export const getTrantodangan = (data) => {
-  return request.globalPost(baseUrl + '/mobile/archives/deleteArchives', data)
+export const editArchives = (data) => {
+  return request.globalPost(baseUrl + '/mobile/archives/editArchives', data)
 }
 //档案列表
 export const queryArchivesList = (data) => {

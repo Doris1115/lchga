@@ -1,11 +1,13 @@
 <template>
   <view class="column">
     <uni-forms
+      v-if="true"
       :rules="rules"
       :value="form"
       ref="form"
       validate-trigger="bind"
       err-show-type="undertext"
+      class=""
     >
       <uni-group>
         <uni-forms-item
@@ -71,124 +73,17 @@
         </uni-forms-item>
       </uni-group>
     </uni-forms>
-    <uni-list v-if="false">
-      <uni-list-item
-        :key="index"
-        v-for="(item,index) in coulums"
-        :class="{'required':item.rules?item.rules.required:false}"
-      >
-        <!-- 自定义 header -->
-        <view
-          slot="header"
-          class="slot-box"
-        >
-          {{item.title}}
-        </view>
-        <view
-          slot="body"
-          class="slot-body"
-        >
-          <uni-easyinput
-            type="text"
-            :inputBorder="true"
-            v-model="form[item.value]"
-            :placeholder="'请输入'+item.title"
-          ></uni-easyinput>
-
-          <!-- <input
-            v-if="inputData.includes(item.value)"
-            class="input_btn"
-            v-model="form[item.value]"
-            :placeholder="'请输入'+item.title"
-            placeholder-class="placeholder"
-            @blur="handleInput"
-          /> -->
-          <input
-            v-if="numData.includes(item.value)"
-            type="number"
-            class="input_btn"
-            v-model="form[item.value]"
-            :placeholder="'请输入'+item.title"
-            placeholder-class="placeholder"
-          />
-          <picker
-            v-else-if="pickerData.includes(item.value)"
-            mode="selector"
-            @change="bindPickerChange($event,item.value)"
-            :value="form[item.value]"
-            :range="pickRanges[item.value]"
-            range-key="title"
-            :name="item.value"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >
-              {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
-            </view>
-          </picker>
-          <!-- <picker
-            v-else-if="numData.includes(item.value)"
-            mode="selector"
-            @change="bindPickerChange($event,item.value)"
-            :value="form[item.value]"
-            :range="pickRanges[item.value]"
-            range-key="title"
-            :name="item.value"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >
-              {{form[item.value]!==''?[...pickRanges[item.value]][form[item.value]]:`请输入${item.title}`}}
-            </view>
-          </picker> -->
-          <picker
-            v-else-if="pickerDate.includes(item.value)"
-            mode="date"
-            :name="item.value"
-            :value="form.birthday"
-            :start="startDate"
-            :end="endDate"
-            @change="bindPickerChange($event,item.value)"
-          >
-            <view
-              class="input_btn"
-              :class='{"placeholder":form[item.value]===""}'
-            >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
-          </picker>
-        </view>
-      </uni-list-item>
-      <uni-list-item v-if="false">
-        <view
-          slot="header"
-          class="slot-box"
-        >
-          证件类型
-        </view>
-        <view
-          slot="body"
-          class="slot-body"
-        >
-          <picker
-            mode="selector"
-            @change="bindPickerChange($event,'certType')"
-            :value="form['certType']"
-            :range="pickRanges['certType']"
-            range-key="title"
-          >
-            <view class="input_btn">
-              {{form['certType']!==''?certType[form.certType].text:"3333"}}
-            </view>
-          </picker>
-        </view>
-      </uni-list-item>
-    </uni-list>
     <button
       type="primary"
       class="submit_btn"
       @click="formSubmit"
-    >保存</button>
+    >{{type?"新 增":"修 改"}}</button>
+    <button
+      type="primary"
+      class="submit_btn del "
+      @click="del"
+      v-if="!type"
+    >删除档案</button>
     <!-- 提示信息弹窗 -->
     <info-tip-pop
       ref="message"
@@ -200,13 +95,23 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, getTrantodangan, queryArchivesList, queryAreaList } from '@/api/main'
+import { addArchives, editArchives } from '@/api/main'
+import { Set_Nationality, Set_CertType, Set_Ethnic, Set_DomicileType, Set_HomeRegist, Set_Education, Set_Occupation, Set_PresentHistory, Set_PastHistory } from '@/utils/nav'
 import { mapGetters } from "vuex";
-
+import { validateMobile } from "@/utils/verify.js"
 export default {
   mixins: [validate],
   components: {
     InfoTipPop
+  },
+  watch: {
+    // 'form': {
+    //   handler (val) {
+    //     this.$refs.form.validate()
+    //   },
+    //   immediate: true,
+    //   deep: true,
+    // }
   },
   computed: {
     ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
@@ -245,6 +150,12 @@ export default {
     this.getSelectItem();
     this.init();
   },
+  onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+    this.type = option.type == 1 ? true : false;
+    if (option.type == 0) {
+      this.form = JSON.parse(decodeURIComponent(option.items));
+    }
+  },
   data () {
     return {
       type: true,
@@ -252,7 +163,7 @@ export default {
         name: {
           rules: [{
             required: true,
-            errorMessage: '请输入用户名'
+            errorMessage: '姓名不能为空'
           },
           {
             minLength: 3,
@@ -261,6 +172,26 @@ export default {
           }
           ]
         },
+        birthday: {
+          rules: [{
+            required: true,
+            errorMessage: '出生年月不能为空'
+          }]
+        },
+        certNumber: {
+          rules: [{
+            required: true,
+            errorMessage: '证件号不能为空'
+          }]
+        },
+        phone: {
+          rules: [{
+            required: true,
+            errorMessage: '联系方式不能为空'
+          }, {
+            validateFunction: validateMobile,
+          }]
+        }
       },
       form: {
         "accountAddressCode": "",//户口地址code
@@ -270,7 +201,7 @@ export default {
         "certNumber": "",//证件号码
         "certType": "2",//证件类型
         "childbirthCount": 0,//产次
-        "consultationUnit": "",//就诊单位id
+        "consultationUnit": "1246789",//就诊单位id
         "consultationUnitName": "",//就诊单位名称
         "domicileType": 1,//户籍分类
         "education": 1,//文化程度
@@ -291,7 +222,7 @@ export default {
         "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
       },
-      inputData: ['name', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
+      inputData: ['name', 'accountAddressText', 'homeAddressDetail', 'accountAddressDetail', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
       pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
       pickerDate: ['birthday', 'childBirth'],
       numData: ['pregnancyCount', 'childbirthCount',],
@@ -307,22 +238,25 @@ export default {
         title: "出生年月",
         value: "birthday",
         required: true
-      }, {
+      },
+      {
         title: "证件类型",
         value: "certType"
       }, {
         title: "证件号",
         value: "certNumber",
         required: true
-      }, {
+      },
+      {
         title: "国籍",
         value: "nationality"
-      }, {
+      },
+      {
         title: "民族",
         value: "ethnic"
       }, {
         title: "户籍",
-        value: "huji"
+        value: "accountAddressText"
       }, {
         title: "户籍分类",
         value: "domicileType"
@@ -341,7 +275,7 @@ export default {
         value: "occupation"
       }, {
         title: "现住址",
-        value: "xianzhuzhi"
+        value: "homeAddressDetail"
       }, {
         title: "户籍地址",
         value: "accountAddressDetail"
@@ -361,25 +295,76 @@ export default {
         title: "就诊单位",
         value: "consultationUnit",
         required: true
-      }],
+      }
+      ],
     }
   },
   methods: {
     init () {
-      this.type = this.$route.query.type ? true : false;
-      let title = this.$route.query.type ? "新增档案" : "档案详情"
-      console.log('ddddd', this.pickRanges);
+      let title = this.type ? "新增档案" : "档案详情"
       uni.setNavigationBarTitle({
         title
       });
+      if (!this.type) {
+        this.getInfoList()
+      }
+      this.getParams()
+
+    },
+    transfer (v) {
+      return JSON.parse(decodeURIComponent(v));
+    },
+    getInfoList (data) {
+      console.log('data', data);
+
     },
     formSubmit () {
-      let params = Object.assign({}, this.form);
-      debugger
-      addArchives(params).then(res => {
-        let a = res
-        debugger
-      })
+      this.$refs.form.validate().then(res => {
+        let openid = uni.getStorageSync('openid');
+        this.form.openid = openid
+        let params = Object.assign({}, this.form);
+        uni.showLoading({
+          title: '加载中'
+        });
+        if (type) {
+          addArchives(params).then(res => {
+            uni.hideLoading()
+            if (res.code) {
+              uni.showToast({
+                title: res.message,
+              })
+              setTimeout(() => {
+                uni.switchTab({
+                  url: "/pages/file/list"
+                })
+              }, 1000);
+            }
+          })
+        } else {
+          editArchives(params).then(res => {
+            uni.hideLoading()
+            if (res.code) {
+              uni.showToast({
+                title: res.message,
+              })
+              setTimeout(() => {
+                uni.switchTab({
+                  url: "/pages/file/list"
+                })
+              }, 1000);
+            }
+          })
+
+        }
+
+      }).catch(err => {
+        uni.showToast({
+          title: err[0].errorMessage,
+        })
+      }
+
+      )
+
     },
     formReset () {
 
@@ -429,33 +414,62 @@ export default {
 <style lang="scss" scoped>
 .column {
   margin-top: $uni-spacing-col-lg;
+  padding-bottom: 180rpx;
 }
-.slot-box {
-  font-size: $uni-font-size-lg;
-  width: 7em;
+::v-deep .uni-group__content {
+  padding: 0 $uni-spacing-row-lg;
+  .uni-forms-item__inner {
+    padding-bottom: 0;
+    overflow: hidden;
+    border-bottom: 1px solid $uni-border-color;
+  }
+  .uni-error-message-text {
+    padding-left: 60rpx;
+  }
+}
+::v-deep .uni-forms-item__label {
+  width: 6em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
-  height: 2em;
-  line-height: 2em;
+  height: 118rpx;
+  line-height: 118rpx;
+  .label-text {
+    span {
+      font-size: $uni-font-size-lg;
+      height: 118rpx;
+      line-height: 118rpx;
+      white-space: nowrap;
+      display: block;
+      // color: $uni-text-color;
+      color: "#666";
+    }
+  }
+}
+::v-deep .uni-forms-item__content {
+  width: 520rpx;
+  height: 118rpx;
+  line-height: 118rpx;
+
+  .input_btn {
+    height: 100%;
+    font-size: $uni-font-size-lg;
+  }
 }
 .submit_btn,
 .disable_btn {
   margin: 60rpx $uni-spacing-row-lg 0;
   border-radius: 90rpx;
+  &.del {
+    border: 1px solid #dadada !important;
+    color: #dadada !important;
+  }
 }
 .disable_btn {
   margin-top: $uni-spacing-row-lg;
   border: 1px solid #dadada;
   color: #999;
 }
-.slot-body {
-  width: 520rpx;
-  height: 2em;
-  line-height: 2em;
-  .input_btn {
-    height: 100%;
-  }
-}
+
 .placeholder {
   color: #dadada;
 }

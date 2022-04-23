@@ -136,7 +136,7 @@
         <button
           type="primary"
           class="submit_btn"
-          @click="addChild"
+          @click="addSfRecord"
         >新增随访记录</button>
       </view>
 
@@ -163,27 +163,27 @@ export default {
   methods: {
     getBabyInfo () {
       getChiTrasfer({}).then(res => {
-        this.coulums = [{
-          title: "三月随访",
-          type: "1",
-          time: "2022-04-18",
-          sfywhy: "1",
-        }, {
-          title: "六月随访",
-          type: "1",
-          time: "2022-04-18",
-          sfywhy: "1",
-        }]
+        // this.coulums = [{
+        //   title: "三月随访",
+        //   type: "1",
+        //   time: "2022-04-18",
+        //   sfywhy: "1",
+        // }, {
+        //   title: "六月随访",
+        //   type: "1",
+        //   time: "2022-04-18",
+        //   sfywhy: "1",
+        // }]
       })
     },
-    addChild (data) {
+    addSfRecord (data) {
       uni.navigateTo({
-        url: `/pages/info/addBaby`
+        url: `/pages/createFile/sczx?type=1`
       })
     },
     getChildDetail (data) {
       uni.navigateTo({
-        url: `/pages/createFile/index`
+        url: `/pages/createFile/scsf?type=0&&items=${encodeURIComponent(JSON.stringify(data))}`
       })
     }
   },

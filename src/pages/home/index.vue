@@ -32,12 +32,15 @@
 </template>
 <script>
 import ColumnItem from "@/pages/components/columnIndex.vue"
+import { getQueryString } from '@/utils/nav'
+
 export default {
   components: {
     ColumnItem,
   },
   data () {
     return {
+      id: "",
       navBar: [{
         url: '/pages/ruyjs/index',
         icon: "/static/image/jgyjx.png",
@@ -73,8 +76,17 @@ export default {
     }
   },
   onLoad () {
+    this.getOpenId()
   },
   methods: {
+    getOpenId () {
+      let wxInfo = JSON.parse(getQueryString('wxuser') || '{}') || {}
+      let openid = wxInfo.openid
+      this.unionid = wxInfo.unionid
+      uni.setStorageSync('openid', openid);
+      uni.setStorageSync('wxInfo', getQueryString('wxuser'));
+      this.id = openid;
+    },
     navigatorTag (url) {
       uni.navigateTo({
         url: url
