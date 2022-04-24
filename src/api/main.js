@@ -1,5 +1,6 @@
 import request from '@/utils/request.js'
-let baseUrl = "/fybj365-abortion-love/tyfwSystem"
+// let baseUrl = "/fybj365-abortion-love/tyfwSystem"
+let baseUrl = "/fybj365-abortion-love/"
 // let baseUrl = uni.getStorageSync('urlHos') ? uni.getStorageSync('urlHos') : "/fybj365-abortion-love/tyfwSystem";
 //获取就诊医院列表
 export const queryAreaList = (data) => {

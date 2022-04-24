@@ -101,6 +101,7 @@
       :type="msgType"
       :message="messageText"
     />
+    {{gestatePlan}}
   </view>
 </template>
 <script>

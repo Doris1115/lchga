@@ -126,6 +126,10 @@ export default {
     this.addBtn = option.type == 3 ? true : false
     if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
+      this.title = this.form.followTime == 3 ? "三" : this.form.followTime == 6 ? "六" : this.form.followTime == 12 ? "十二" : "二十四"
+      uni.setNavigationBarTitle({
+        title: this.title + "月随访详情"
+      });
       this.form.followTime = this.pickRanges.followTime.findIndex(item => {
         return item == this.form.followTime
       })
@@ -135,6 +139,7 @@ export default {
     return {
       type: true,
       addBtn: false,
+      title: "三",
       form: {
         "name": uni.getStorageSync('name'),//档案id
         "archivesId": uni.getStorageSync('archivesId'),

@@ -34,7 +34,7 @@
                       <view class="demo-uni-col dark">近期孕育计划</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstConsultation.gestatePlan}}</view>
+                      <view class="demo-uni-col light">{{gestatePlan[firstConsultation.gestatePlan].title}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -44,7 +44,7 @@
                       <view class="demo-uni-col dark">本次妊娠原因</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstConsultation.pregnancyReason}}</view>
+                      <view class="demo-uni-col light">{{pregnancyReason[firstConsultation.pregnancyReason].title}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -187,7 +187,7 @@ export default {
   },
   mounted () {
     this.getSelectItem();
-    this.getInfoList();
+    // this.getInfoList();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.type = option.type == 1 ? true : false;
@@ -207,8 +207,8 @@ export default {
         let data = res.result
         if (data.firstConsultation) {
           this.firstConsultation = data.firstConsultation;
-          this.firstConsultation.gestatePlan = this.gestatePlan[data.firstConsultation.gestatePlan].title;
-          this.firstConsultation.pregnancyReason = this.pregnancyReason[data.firstConsultation.pregnancyReason].title;
+          this.firstConsultation.gestatePlan = this.gestatePlan[data.firstConsultation.gestatePlan].value;
+          this.firstConsultation.pregnancyReason = this.pregnancyReason[data.firstConsultation.pregnancyReason].value;
         }
         this.firstFollow = data.firstFollow;
         this.coulums = []
@@ -254,13 +254,11 @@ export default {
         url: `/pages/createFile/scsf?type=0&&items=${encodeURIComponent(JSON.stringify(data))}`
       })
     },
-    getSelectItem () {
-      return new Promise((res) => {
-        this.$store.dispatch('GET_GESTATEPLAN');
-        this.$store.dispatch('GET_FOLLOWMANNER');
-        this.$store.dispatch('GET_PREGNANCYREASON');
-        res()
-      })
+    async getSelectItem () {
+      await this.$store.dispatch('GET_GESTATEPLAN');
+      await this.$store.dispatch('GET_FOLLOWMANNER');
+      await this.$store.dispatch('GET_PREGNANCYREASON');
+      this.getInfoList();
     },
   },
 }
