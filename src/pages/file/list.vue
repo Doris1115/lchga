@@ -96,15 +96,17 @@ export default {
       queryArchivesList({ openid }).then(res => {
         if (res.code) {
           this.coulums = []
-          res.result.map(v => {
-            this.coulums.push({
-              ...v,
-              addUnitName: v.treatmentUnitName,
-              name: v.name,
-              consultationTime: v.createDate,
-              domicileType: v.domicileType,
+          if (res.result.length > 0) {
+            res.result.map(v => {
+              this.coulums.push({
+                ...v,
+                addUnitName: v.treatmentUnitName,
+                name: v.name,
+                consultationTime: v.createDate,
+                domicileType: v.domicileType,
+              })
             })
-          })
+          }
         }
       })
     },

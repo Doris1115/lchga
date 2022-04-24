@@ -330,7 +330,12 @@ export default {
               })
               setTimeout(() => {
                 uni.switchTab({
-                  url: "/pages/file/list"
+                  url: "/pages/file/list",
+                  success: function (e) {
+                    var page = getCurrentPages().pop();
+                    if (page == undefined || page == null) return;
+                    page.getInfoList();
+                  }
                 })
               }, 1000);
             }
@@ -344,7 +349,12 @@ export default {
               })
               setTimeout(() => {
                 uni.switchTab({
-                  url: "/pages/file/list"
+                  url: "/pages/file/list",
+                  success: function (e) {
+                    var page = getCurrentPages().pop();
+                    if (page == undefined || page == null) return;
+                    page.getInfoList();
+                  }
                 })
               }, 1000);
             }

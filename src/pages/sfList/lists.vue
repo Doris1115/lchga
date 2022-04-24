@@ -4,7 +4,7 @@
     <view class="column">
       <view
         class="wrap"
-        v-if="firstConsultation"
+        v-if="coulums.length>0"
       >
         <uni-list
           class="column_baby"
@@ -12,12 +12,14 @@
         >
           <uni-list-item
             class="item_column"
-            :to="`/pages/createFile/sczx?type=0&items=${encodeURIComponent(JSON.stringify(firstConsultation))}`"
-            v-if="firstConsultation"
+            v-for="(item,index) in coulums"
+            :key="index"
+            :to="`/pages/createFile/${item.url}?type=3&items=${encodeURIComponent(JSON.stringify(item))}`"
           >
             <view
               slot="body"
               class="slot-body"
+              v-if="item.type=='0'"
             >
               <uni-row>
                 <uni-col
@@ -34,7 +36,7 @@
                       <view class="demo-uni-col dark">近期孕育计划</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstConsultation.gestatePlan}}</view>
+                      <view class="demo-uni-col light">{{item.plan}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -44,7 +46,7 @@
                       <view class="demo-uni-col dark">本次妊娠原因</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstConsultation.pregnancyReason}}</view>
+                      <view class="demo-uni-col light">{{item.reason}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -52,15 +54,10 @@
               <view class="status">2022-03-23</view>
               <view class="sf-list">查看详情</view>
             </view>
-          </uni-list-item>
-          <uni-list-item
-            class="item_column"
-            :to="`/pages/createFile/scsf?type=0&items=${encodeURIComponent(JSON.stringify(firstFollow))}`"
-            v-if="firstFollow"
-          >
             <view
               slot="body"
               class="slot-body"
+              v-else-if="item.type=='1'"
             >
               <uni-row>
                 <uni-col
@@ -77,7 +74,7 @@
                       <view class="demo-uni-col dark">&nbsp;恢复性生活&nbsp;</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstFollow.isSexLife?"是":"否"}}</view>
+                      <view class="demo-uni-col light">{{item.isSexLife?"是":"否"}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -87,7 +84,7 @@
                       <view class="demo-uni-col dark">&nbsp;恢&nbsp;复&nbsp;月&nbsp;经&nbsp;</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{firstFollow.isMenstrualRecover?"是":"否"}}</view>
+                      <view class="demo-uni-col light">{{item.isMenstrualRecover?"是":"否"}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -95,24 +92,17 @@
               <view class="status">2022-04-12</view>
               <navigator class="sf-list">查看详情</navigator>
             </view>
-          </uni-list-item>
-          <uni-list-item
-            v-for="(items,index) in coulums"
-            :key="index"
-            class="item_column"
-            :border="false"
-            :to="`/pages/createFile/sfxq?type=0&items=${encodeURIComponent(JSON.stringify(items))}`"
-          >
             <view
               slot="body"
               class="slot-body"
+              v-else
             >
               <uni-row>
                 <uni-col
                   :span='24'
                   class="title-column"
                 >
-                  {{items.title}}
+                  {{item.followName}}
                 </uni-col>
               </uni-row>
               <uni-row>
@@ -122,7 +112,7 @@
                       <view class="demo-uni-col dark">随 诊 方 式</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{items.manner}}</view>
+                      <view class="demo-uni-col light">{{item.manner}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
@@ -132,28 +122,23 @@
                       <view class="demo-uni-col dark">再次意外妊娠</view>
                     </uni-col>
                     <uni-col :span="16">
-                      <view class="demo-uni-col light">{{items.surprisePregnancy?"是":"否"}}</view>
+                      <view class="demo-uni-col light">{{item.surprisePregnancy?"是":"否"}}</view>
                     </uni-col>
                   </uni-row>
                 </uni-col>
               </uni-row>
-              <view class="status">{{items.addTime}}</view>
+              <view class="status">{{item.addTime.slice(0,10)}}</view>
               <navigator class="sf-list">查看详情</navigator>
             </view>
 
           </uni-list-item>
         </uni-list>
-        <button
-          type="primary"
-          class="submit_btn"
-          v-if="coulums.length<4"
-          @click="addSfRecord"
-        >新增随访记录</button>
       </view>
       <empty-column
         v-else
         title="您还没有添加随访信息"
-        btnTitle="添加首次咨询"
+        btnTitle=""
+        type="3"
         @saveBtn="addSfRecord"
       />
 
@@ -161,7 +146,7 @@
   </view>
 </template>
 <script>
-import { queryFollowList } from '@/api/main'
+import { queryAllFollowList } from '@/api/main'
 import EmptyColumn from "@/pages/components/emptyColumn"
 import { mapGetters } from "vuex";
 
@@ -187,7 +172,7 @@ export default {
   },
   mounted () {
     this.getSelectItem();
-    this.getInfoList();
+    this.getLists();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.type = option.type == 1 ? true : false;
@@ -200,41 +185,32 @@ export default {
     }
   },
   methods: {
-    getInfoList () {
-      queryFollowList({
-        archivesId: this.archivesId
+    getLists () {
+      queryAllFollowList({
+        openid: uni.getStorageSync('openid')
       }).then(res => {
-        let data = res.result
-        if (data.firstConsultation) {
-          this.firstConsultation = data.firstConsultation;
-          this.firstConsultation.gestatePlan = this.gestatePlan[data.firstConsultation.gestatePlan].title;
-          this.firstConsultation.pregnancyReason = this.pregnancyReason[data.firstConsultation.pregnancyReason].title;
-        }
-        this.firstFollow = data.firstFollow;
         this.coulums = []
-        if (!!data.month3Follow) {
-          let p = data.month3Follow
-          p.manner = this.followManner[p.followManner].title;
-          p.title = "三月随访"
-          this.coulums.push({ ...p })
-        }
-        if (data.month6Follow) {
-          let s = data.month6Follow
-          s.manner = this.followManner[s.followManner].title;
-          s.title = "六月随访"
-          this.coulums.push({ ...s })
-        }
-        if (data.month12Follow) {
-          let t = data.month12Follow
-          t.manner = this.followManner[t.followManner].title;
-          t.title = "十二月随访"
-          this.coulums.push({ ...t })
-        }
-        if (data.month24Follow) {
-          let w = data.month24Follow
-          w.title = "二十四月随访"
-          w.manner = this.followManner[w.followManner].title;
-          this.coulums.push({ ...w })
+        if (res.result.length > 0) {
+
+          res.result.map(item => {
+            if (item.followName == '首次咨询') {
+              item.type = 0;
+              item.plan = this.gestatePlan[item.gestatePlan].title;
+              item.reason = this.pregnancyReason[item.pregnancyReason].title;
+              item.url = "sczx"
+            } else if (item.followName == '首次随访') {
+              item.type = 1
+              item.url = "scsf"
+            } else {
+              item.type = 2
+              item.manner = this.followManner[item.followManner].title;
+              item.url = "sfxq"
+            }
+            this.coulums.push({
+              ...item
+            })
+          })
+
         }
       })
     },
@@ -266,9 +242,6 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.column {
-  padding-bottom: 180rpx;
-}
 .column_baby {
   @extend .layer-contain;
   background: none;

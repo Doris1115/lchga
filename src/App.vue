@@ -35,6 +35,7 @@ uni-page-body {
   background-color: #f5f5f5 !important;
   min-height: 100% !important;
   height: auto !important;
+  font-size: 24rpx;
 }
 
 .uni-top-window uni-tabbar .uni-tabbar {
@@ -89,5 +90,10 @@ page {
 /* #endif*/
 ::v-deep.uni-mask {
   background: rgba(0, 0, 0, 0.5) !important;
+}
+::v-deep uni-button[loading][type="primary"] {
+  background-color: #fafafa;
+  color: #dadada !important;
+  border: 1px solid #999 !important;
 }
 </style>

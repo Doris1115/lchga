@@ -20,6 +20,12 @@
       }
     },
     {
+      "path": "pages/sfList/lists",
+      "style": {
+        "navigationBarTitleText": "随访列表"
+      }
+    },
+    {
       "path": "pages/createFile/index",
       "style": {
         "navigationBarTitleText": "档案详情"
@@ -68,6 +74,12 @@
       "path": "pages/createFile/index",
       "style": {
         "navigationBarTitleText": "档案详情"
+      }
+    },
+    {
+      "path": "pages/info/hospital",
+      "style": {
+        "navigationBarTitleText": "就诊医院"
       }
     }
   ],

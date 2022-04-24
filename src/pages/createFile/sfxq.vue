@@ -22,7 +22,7 @@
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
-            :disabled="item.value=='name'"
+            :disabled="item.value=='name'|| addBtn"
           />
           <picker
             v-else-if="pickerData.includes(item.value)"
@@ -32,6 +32,7 @@
             :range="pickRanges[item.value]"
             range-key="title"
             :name="item.value"
+            :disabled="addBtn"
           >
             <view
               class="input_btn"
@@ -48,6 +49,7 @@
             :range="pickRanges[item.value]"
             range-key="title"
             :name="item.value"
+            :disabled="addBtn"
           >
             <view
               class="input_btn"
@@ -66,19 +68,7 @@
             type="textarea"
             v-model="form.remark"
             placeholder="请输入备注"
-          />
-        </uni-forms-item>
-        <uni-forms-item
-          name="consultationFocus"
-          label="重点咨询内容"
-          class="text-area-box"
-          required
-        >
-          <uni-easyinput
-            @input="validateField"
-            type="textarea"
-            v-model="form.consultationFocus"
-            placeholder="请输入重点咨询内容"
+            :disabled="addBtn"
           />
         </uni-forms-item>
       </uni-group>
@@ -87,6 +77,7 @@
       type="primary"
       class="submit_btn"
       @click="formSubmit"
+      v-if="!addBtn"
     >{{type?"新 增":"修 改"}}</button>
     <button
       type="primary"
@@ -122,7 +113,7 @@ export default {
         "isUseOther": this.yesno,//是否换用其他方法
         "replacement": this.planContraceptionMethod,//替换产品
         "surprisePregnancy": this.yesno,//再次意外妊娠
-        'followTime': ["三月随访", "六月随访", "九月随访", "十二月随访", "二十四月随访"],
+        'followTime': [3, 6, 12, 24],
       }
     }
   },
@@ -131,14 +122,19 @@ export default {
     this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
-    this.type = option.type == 1 ? true : false;
-    if (option.type == 0) {
+    this.type = option.type == 1 || option.type == 3 ? true : false;
+    this.addBtn = option.type == 3 ? true : false
+    if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
+      this.form.followTime = this.pickRanges.followTime.findIndex(item => {
+        return item == this.form.followTime
+      })
     }
   },
   data () {
     return {
       type: true,
+      addBtn: false,
       form: {
         "name": uni.getStorageSync('name'),//档案id
         "archivesId": uni.getStorageSync('archivesId'),
@@ -208,37 +204,52 @@ export default {
         let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
         this.form.archivesId = archivesId
+        this.form.followTime = this.pickRanges.followTime[this.form.followTime]
         let params = Object.assign({}, this.form);
-        uni.showLoading({
-          title: '加载中'
-        });
         if (this.type) {//新增
           addBehindFollow(params).then(res => {
-            uni.hideLoading()
-            if (res.code) {
+            if (res.code == 200) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
                 uni.navigateTo({
-                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+                  success: function (e) {
+                    var page = getCurrentPages().pop();
+                    if (page == undefined || page == null) return;
+                    page.getInfoList();
+                  }
                 })
 
               }, 1000);
+            } else {
+              uni.showToast({
+                title: res.message,
+              })
             }
           })
         } else {
           editBehindFollow(params).then(res => {
             uni.hideLoading()
-            if (res.code) {
+            if (res.code == 200) {
               uni.showToast({
                 title: res.message,
               })
               setTimeout(() => {
                 uni.navigateTo({
-                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                  url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+                  success: function (e) {
+                    var page = getCurrentPages().pop();
+                    if (page == undefined || page == null) return;
+                    page.getInfoList();
+                  }
                 })
               }, 1000);
+            } else {
+              uni.showToast({
+                title: res.message,
+              })
             }
           })
 
@@ -277,11 +288,28 @@ export default {
       await this.$store.dispatch('GET_FOLLOWMANNER');
     },
     del () {
-      let archivesId = uni.getStorageSync('archivesId')
       deleteBehindFollow({
-        archivesId
+        id: this.form.id
       }).then(res => {
-
+        if (res.code == 200) {
+          uni.showToast({
+            title: res.message,
+          })
+          setTimeout(() => {
+            uni.navigateTo({
+              url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+              success: function (e) {
+                var page = getCurrentPages().pop();
+                if (page == undefined || page == null) return;
+                page.getInfoList();
+              }
+            })
+          }, 1000);
+        } else {
+          uni.showToast({
+            title: res.message,
+          })
+        }
       })
     }
   },

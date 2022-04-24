@@ -1,130 +1,168 @@
 <template>
   <view class="column">
-    <form
-      @submit="formSubmit"
-      @reset="formReset"
+    <uni-forms
+      :rules="rules"
+      :value="form"
+      ref="form"
+      validate-trigger="bind"
+      err-show-type="undertext"
+      class=""
     >
-      <uni-list>
-        <uni-list-item
+      <uni-group>
+        <uni-forms-item
+          :name="item.value"
+          :required="item.required"
+          :label="item.title"
           v-for="(item,index) in coulums"
           :key="index"
         >
-          <!-- 自定义 header -->
-          <view
-            slot="header"
-            class="slot-box"
+          <input
+            v-if="inputData.includes(item.value)"
+            class="input_btn"
+            :name="item.value"
+            :placeholder="'请输入'+item.title"
+            :disabled="item.value=='nickname'"
+            v-model="form[item.value]"
+            @blur="validate"
+            @input="validate"
+          />
+          <picker
+            v-if="pickerData.includes(item.value)"
+            mode="selector"
+            @change="bindPickerChange($event,item.value)"
+            :value="form[item.value]"
+            :range="pickRanges[item.value]"
+            range-key="title"
+            :name="item.value"
           >
-            {{item.title}}
-          </view>
-          <view
-            slot="body"
-            class="slot-body"
+            <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+            >
+              {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
+              <!-- {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}} -->
+            </view>
+          </picker>
+          <picker
+            v-if="pickerDate.includes(item.value)"
+            mode="date"
+            :name="item.value"
+            :value="form.birthday"
+            :start="startDate"
+            :end="endDate"
+            @change="bindPickerChange($event,item.value)"
           >
-            <input
-              v-if="item.value==='name'"
+            <view
               class="input_btn"
-              :name="item.value"
-              :placeholder="'请输入'+item.title"
-              v-model="form.name"
-              disabled
-            />
-            <input
-              v-if="item.value==='sex'"
-              class="input_btn"
-              :name="item.value"
-              :placeholder="'请输入'+item.title"
-              v-model="form.sex"
-              disabled
-            />
-          </view>
-        </uni-list-item>
-      </uni-list>
+              :class='{"placeholder":form[item.value]===""}'
+            >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
+          </picker>
+        </uni-forms-item>
+      </uni-group>
       <button
-        v-if="false"
         type="primary"
         class="submit_btn"
         form-type="submit"
+        @click="formSubmit"
+        :loading="loading"
       >保存</button>
-    </form>
+    </uni-forms>
   </view>
 </template>
 <script>
-import { getTrantodangan, savedanganmessage } from '@/api/main'
-
+import { validateMobile } from "@/utils/verify.js"
+import { saveWXUser, findByOpenid, editWechatUserByOpenid } from "@/api/main.js"
 export default {
-  mounted () {
-    this.getBaseInfo();
-  },
-  data () {
-    var wxInfo = JSON.parse(uni.getStorageSync("wxInfo"))
-
-    const currentDate = this.getDate({
-      format: true
-    })
-    return {
-      form: {
-        name: wxInfo.nickname,
-        sex: wxInfo.sex ? "男" : "女",
-      },
-      hospital: [],
-      hospitalIndex: 1,
-      hospitalTotal: [],
-      coulums: [{
-        title: "姓名",
-        value: "name"
-      }, {
-        title: "性别",
-        value: "sex"
-      }],
-      date: currentDate
-    }
-  },
   computed: {
     startDate () {
       return this.getDate('start');
     },
     endDate () {
       return this.getDate('end');
+    },
+    pickRanges () {
+      return {
+        sex: [{
+          text: "女孩",
+          title: "女孩",
+          value: "0"
+        }, {
+          text: "男孩",
+          title: "男孩",
+          value: "1"
+        }],
+      }
+    }
+  },
+  mounted () {
+    this.init();
+  },
+  data () {
+    var wxInfo = JSON.parse(uni.getStorageSync("wxInfo"))
+    return {
+      loading: false,
+      isAdd: true,
+      form: {
+        nickname: wxInfo.nickname,
+        sex: wxInfo.sex ? wxInfo.sex : 0,
+        birthday: "1990-01-01",
+        headimgurl: wxInfo.headimgurl,
+        signature: wxInfo.signature,
+        tel: wxInfo.tel,
+        unionid: wxInfo.unionid,
+      },
+      hospital: [],
+      hospitalIndex: 1,
+      hospitalTotal: [],
+      inputData: ['nickname', 'tel', 'signature'],
+      pickerDate: ['birthday'],
+      pickerData: ['sex'],
+      coulums: [{
+        title: "昵称",
+        value: "nickname"
+      }, {
+        title: "性别",
+        value: "sex"
+      }, {
+        title: "出生日期",
+        value: "birthday"
+      }, {
+        title: "联系电话",
+        value: "tel"
+      }, {
+        title: "签名",
+        value: "signature"
+      }],
+      rules: {
+        nickname: {
+          rules: [{
+            required: true,
+            errorMessage: '姓名不能为空'
+          }]
+        },
+        birthday: {
+          rules: [{
+            required: true,
+            errorMessage: '出生年月不能为空'
+          }]
+        },
+        tel: {
+          rules: [{
+            validateFunction: validateMobile,
+          }]
+        }
+      },
     }
   },
   methods: {
-    formSubmit (e) {
-      uni.showLoading()
-      let form = this.form
-      savedanganmessage(form).then(res => {
-        uni.hideLoading()
-        debugger
-      })
-    },
-    bindPickerChange (e) {
-      this.hospitalIndex = e.target.value;
-      this.form.hospital = this.hospitalTotal[e.target.value].id
-    },
-    bindDateChange (e) {
-      this.form.lastEmmenia = e.target.value;
-    },
-    getBaseInfo () {
-      let uid = uni.getStorageSync('uid');
-      getTrantodangan({
-        uid,
-        memberFileId: 0,
-        ifAdd: 0
+    init () {
+      findByOpenid({
+        openid: uni.getStorageSync('openid')
       }).then(res => {
-        let result = res.data;
+        this.isAdd = false;
         this.form = {
-          motherName: result.fileMap.motherName,
-          cardCode: result.fileMap.cardCode,
-          hospital: result.fileMap.hospital,
-          lastEmmenia: result.fileMap.lastEmmenia
+          ...res.result
         }
-        this.hospitalTotal = result.hospital;
-        this.hospital = Object.values(result.hospital.map(item => item.name));
-        this.hospital.forEach((item, index) => {
-          if (item.id == result.fileMap.hospital) {
-            this.hospitalIndex = index;
-            return false;
-          }
-        })
       })
     },
     getDate (type) {
@@ -140,32 +178,103 @@ export default {
       month = month > 9 ? month : '0' + month;
       day = day > 9 ? day : '0' + day;
       return `${year}-${month}-${day}`;
+    },
+    bindPickerChange (e, v) {
+      this.form[v] = e.detail.value;
+    },
+    validate (val) {
+      this.$refs.form.validate()
+    },
+    formSubmit () {
+      this.$refs.form.validate().then(res => {
+        this.loading = true;
+        this.form.openid = uni.getStorageSync('openid');
+        let params = Object.assign({}, this.form);
+        if (this.isAdd) {
+          saveWXUser({ ...params }).then(res => {
+            this.loading = false;
+            if (res.code == 200) {
+              uni.showToast({
+                title: res.message,
+              })
+            }
+          })
+        } else {
+          editWechatUserByOpenid({ ...params }).then(res => {
+            this.loading = false;
+            if (res.code == 200) {
+              uni.showToast({
+                title: res.message,
+              })
+            }
+          })
+        }
+
+      })
     }
   },
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .column {
   margin-top: $uni-spacing-col-lg;
+  padding-bottom: 180rpx;
 }
-.slot-box {
-  font-size: $uni-font-size-lg;
-  width: 4em;
+::v-deep .uni-group__content {
+  padding: 0 $uni-spacing-row-lg;
+  .uni-forms-item__inner {
+    padding-bottom: 0;
+    overflow: hidden;
+    border-bottom: 1px solid $uni-border-color;
+  }
+  .uni-error-message-text {
+    padding-left: 60rpx;
+  }
+}
+::v-deep .uni-forms-item__label {
+  width: 6em !important;
   text-align: justify;
   margin-right: $uni-spacing-row-base;
-  height: 2em;
-  line-height: 2em;
+  height: 118rpx;
+  line-height: 118rpx;
+  .label-text {
+    span {
+      font-size: $uni-font-size-lg;
+      height: 118rpx;
+      line-height: 118rpx;
+      white-space: nowrap;
+      display: block;
+      // color: $uni-text-color;
+      color: "#666";
+    }
+  }
 }
-.submit_btn {
-  margin: 60rpx $uni-spacing-row-lg;
-  border-radius: 90rpx;
-}
-.slot-body {
+::v-deep .uni-forms-item__content {
   width: 520rpx;
-  height: 2em;
-  line-height: 2em;
+  height: 118rpx;
+  line-height: 118rpx;
+
   .input_btn {
     height: 100%;
+    font-size: $uni-font-size-lg;
   }
+}
+.submit_btn,
+.disable_btn {
+  margin: 60rpx $uni-spacing-row-lg 0;
+  border-radius: 90rpx;
+  &.del {
+    border: 1px solid #dadada !important;
+    color: #dadada !important;
+  }
+}
+.disable_btn {
+  margin-top: $uni-spacing-row-lg;
+  border: 1px solid #dadada;
+  color: #999;
+}
+
+.placeholder {
+  color: #dadada;
 }
 </style>

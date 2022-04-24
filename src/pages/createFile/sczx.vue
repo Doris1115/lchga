@@ -31,6 +31,7 @@
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
+            :disabled="addBtn"
           />
           <picker
             v-else-if="pickerData.includes(item.value)"
@@ -40,6 +41,7 @@
             :range="pickRanges[item.value]"
             range-key="title"
             :name="item.value"
+            :disabled="addBtn"
           >
             <view
               class="input_btn"
@@ -55,6 +57,7 @@
             :value="form.planAbortionTime"
             :start="startDate"
             :end="endDate"
+            :disabled="addBtn"
             @change="bindPickerChange($event,item.value)"
           >
             <view
@@ -74,6 +77,7 @@
             type="textarea"
             v-model="form.consultationFocus"
             placeholder="请输入重点咨询内容"
+            :disabled="addBtn"
           />
         </uni-forms-item>
       </uni-group>
@@ -83,6 +87,7 @@
       class="submit_btn"
       :loading="loading"
       @click="formSubmit"
+      v-if="!addBtn"
     >{{type?"新 增":"修 改"}}</button>
     <button
       type="primary"
@@ -132,8 +137,9 @@ export default {
     this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
-    this.type = option.type == 1 ? true : false;
-    if (option.type == 0) {
+    this.type = option.type == 1 || option.type == 3 ? true : false;
+    this.addBtn = option.type == 3 ? true : false
+    if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
     }
   },
@@ -142,6 +148,7 @@ export default {
     return {
       type: true,
       loading: false,
+      addBtn: false,
       form: {
         "archivesId": 0,//档案id
         "name": uni.getStorageSync('name'),//档案id
@@ -293,11 +300,28 @@ export default {
       await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
     },
     del () {
-      let archivesId = uni.getStorageSync('archivesId')
       deleteFirstConsultation({
-        archivesId
+        id: this.form.id
       }).then(res => {
-
+        if (res.code == 200) {
+          uni.showToast({
+            title: res.message,
+          })
+          setTimeout(() => {
+            uni.navigateTo({
+              url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+              success: function (e) {
+                var page = getCurrentPages().pop();
+                if (page == undefined || page == null) return;
+                page.getInfoList();
+              }
+            })
+          }, 1000);
+        } else {
+          uni.showToast({
+            title: res.message,
+          })
+        }
       })
     }
   },

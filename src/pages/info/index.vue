@@ -60,13 +60,13 @@ export default {
         icon: "/static/icons/wdxx.png",
         url: "/pages/info/baseInfo"
       }, {
-        title: "我的档案",
-        icon: "/static/icons/lchgaHL.png",
-        url: "/pages/info/baseInfo"
-      }, {
         title: "随访列表",
         icon: "/static/icons/sflb.png",
-        url: "/pages/sfList/index"
+        url: "/pages/sfList/lists"
+      }, {
+        title: "就诊医院",
+        icon: "/static/icons/sflb.png",
+        url: "/pages/info/hospital"
       },]
     }
   },

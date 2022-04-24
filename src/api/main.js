@@ -1,13 +1,21 @@
 import request from '@/utils/request.js'
-// let baseUrl = "/fybj365-abortion-love/tyfwSystem"
-let baseUrl = "http://39.107.74.117:9999/fybj365-abortion-love"
-//添加微信用户信息
+let baseUrl = "/fybj365-abortion-love/tyfwSystem"
+// let baseUrl = uni.getStorageSync('urlHos') ? uni.getStorageSync('urlHos') : "/fybj365-abortion-love/tyfwSystem";
+//获取就诊医院列表
 export const queryAreaList = (data) => {
   return request.globalRequest(baseUrl + '/mobile/common/queryAreaList', data)
 }
 //添加微信用户信息
-export const savebaby = (data) => {
-  return request.globalPost(baseUrl + '/mobile/wechatUser/addWechatUser', data)
+export const saveWXUser = (data) => {
+  return request.globalPostRequest(baseUrl + '/mobile/wechatUser/addWechatUser', data)
+}
+//查找微信用户信息
+export const findByOpenid = (data) => {
+  return request.globalRequest(baseUrl + '/mobile/wechatUser/findByOpenid', data)
+}
+//编辑微信用户信息
+export const editWechatUserByOpenid = (data) => {
+  return request.globalPostRequest(baseUrl + '/mobile/wechatUser/editWechatUserByOpenid', data)
 }
 // 档案信息 添加档案
 export const addArchives = (data) => {
@@ -29,6 +37,10 @@ export const queryArchivesList = (data) => {
 export const queryFollowList = (data) => {
   return request.globalRequest(baseUrl + '/mobile/archives/queryFollowList', data)
 }
+//所有随访列表
+export const queryAllFollowList = (data) => {
+  return request.globalRequest(baseUrl + '/mobile/archives/queryAllFollowList', data)
+}
 //首次咨询  添加首次咨询
 export const addFirstConsultation = (data) => {
   return request.globalPostRequest(baseUrl + '/mobile/firstConsultation/addFirstConsultation', data)
@@ -47,7 +59,7 @@ export const addFirstFollow = (data) => {
 }
 //通过id删除
 export const deleteFirstFollow = (data) => {
-  return request.globalPostRequest(baseUrl + '/mobile/firstFollow/deleteFirstFollow', data)
+  return request.globalRequest(baseUrl + '/mobile/firstFollow/deleteFirstFollow', data)
 }
 //编辑首次随访
 export const editFirstFollow = (data) => {
@@ -59,7 +71,7 @@ export const addBehindFollow = (data) => {
 }
 //通过id删除
 export const deleteBehindFollow = (data) => {
-  return request.globalPostRequest(baseUrl + '/mobile/behindFollow/deleteBehindFollow', data)
+  return request.globalRequest(baseUrl + '/mobile/behindFollow/deleteBehindFollow', data)
 }
 //编辑首次随访
 export const editBehindFollow = (data) => {

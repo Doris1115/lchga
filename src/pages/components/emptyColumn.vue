@@ -11,6 +11,7 @@
       size="mini"
       plain
       class="submit_btn02"
+      v-if="type!=='3'"
       @click="addFile"
     >{{btnTitle}}</button>
   </view>
@@ -25,6 +26,10 @@ export default {
     btnTitle: {
       title: String,
       default: "添加档案"
+    },
+    type: {
+      title: String,
+      default: "0"
     }
   },
   data () {

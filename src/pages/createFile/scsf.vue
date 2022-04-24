@@ -23,7 +23,7 @@
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
             placeholder-class="placeholder"
-            :disabled="item.value=='name'"
+            :disabled="item.value=='name'||addBtn"
           />
           <input
             v-else-if="numData.includes(item.value)"
@@ -31,6 +31,7 @@
             type="number"
             v-model="form[item.value]"
             :placeholder="'请输入'+item.title"
+            :disabled="addBtn"
             placeholder-class="placeholder"
           />
           <picker
@@ -40,6 +41,7 @@
             :value="form[item.value]"
             :range="pickRanges[item.value]"
             range-key="title"
+            :disabled="addBtn"
             :name="item.value"
           >
             <view
@@ -56,6 +58,7 @@
             :value="form.planAbortionTime"
             :start="startDate"
             :end="endDate"
+            :disabled="addBtn"
             @change="bindPickerChange($event,item.value)"
           >
             <view
@@ -75,6 +78,7 @@
             type="textarea"
             v-model="form.consultationFocus"
             placeholder="请输入重点咨询内容"
+            :disabled="addBtn"
           />
         </uni-forms-item>
       </uni-group>
@@ -84,6 +88,7 @@
       class="submit_btn"
       @click="formSubmit"
       :loading="loading"
+      v-if="!addBtn"
     >{{type?"新 增":"修 改"}}</button>
     <button
       type="primary"
@@ -127,15 +132,18 @@ export default {
     this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
-    this.type = option.type == 1 ? true : false;
-    if (option.type == 0) {
+    this.type = option.type == 1 || option.type == 3 ? true : false;
+    this.addBtn = option.type == 3 ? true : false
+    if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
     }
+
   },
   data () {
     return {
       type: true,
       loading: false,
+      addBtn: false,
       form: {
         "name": uni.getStorageSync('name'),
         "afterAbortionBloodDay": 7,//流产后出血天数
@@ -232,7 +240,12 @@ export default {
             })
             setTimeout(() => {
               uni.navigateTo({
-                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+                success: function (e) {
+                  var page = getCurrentPages().pop();
+                  if (page == undefined || page == null) return;
+                  page.getInfoList();
+                }
               })
 
             }, 1000);
@@ -247,7 +260,12 @@ export default {
             }
             setTimeout(() => {
               uni.navigateTo({
-                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`
+                url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+                success: function (e) {
+                  var page = getCurrentPages().pop();
+                  if (page == undefined || page == null) return;
+                  page.getInfoList();
+                }
               })
             }, 1000);
           })
@@ -296,11 +314,28 @@ export default {
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
     },
     del () {
-      let archivesId = uni.getStorageSync('archivesId')
       deleteFirstFollow({
-        archivesId
+        id: this.form.id
       }).then(res => {
-
+        if (res.code == 200) {
+          uni.showToast({
+            title: res.message,
+          })
+          setTimeout(() => {
+            uni.navigateTo({
+              url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,
+              success: function (e) {
+                var page = getCurrentPages().pop();
+                if (page == undefined || page == null) return;
+                page.getInfoList();
+              }
+            })
+          }, 1000);
+        } else {
+          uni.showToast({
+            title: res.message,
+          })
+        }
       })
     }
   },

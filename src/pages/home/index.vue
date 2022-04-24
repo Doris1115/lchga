@@ -86,6 +86,12 @@ export default {
       uni.setStorageSync('openid', openid);
       uni.setStorageSync('wxInfo', getQueryString('wxuser'));
       this.id = openid;
+      let url = uni.getStorageSync('urlHos');
+      if (!url) {
+        // uni.navigateTo({
+        //   url: '/pages/info/hospital'
+        // })
+      }
     },
     navigatorTag (url) {
       uni.navigateTo({
