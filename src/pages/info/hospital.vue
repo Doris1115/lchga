@@ -48,7 +48,8 @@ export default {
       list: [],
       form: 0,
       loading: false,
-      hosData: {}
+      hosData: {},
+      url: ""
     }
   },
   methods: {
@@ -77,6 +78,7 @@ export default {
     formSubmit () {
       this.loading = true;
       this.hosData = this.list[this.form];
+      this.url = this.list[this.form].url;
       uni.setStorageSync('urlHos', encodeURIComponent(JSON.stringify(this.hosData)));
       setTimeout(() => {
         this.loading = false;
@@ -88,7 +90,7 @@ export default {
           success: function (e) {
             var page = getCurrentPages().pop();
             if (page == undefined || page == null) return;
-            page.getOpenId();
+            page.onload(this.url);
           }
         })
       }, 300);

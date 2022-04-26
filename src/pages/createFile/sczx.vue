@@ -101,12 +101,13 @@
       :type="msgType"
       :message="messageText"
     />
-    {{gestatePlan}}
   </view>
 </template>
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
+import { transfer } from "@/utils/verify.js"
+
 import { addFirstConsultation, editFirstConsultation, deleteFirstConsultation } from '@/api/main'
 import { mapGetters } from "vuex";
 export default {
@@ -145,8 +146,10 @@ export default {
     }
   },
   data () {
+    var url = uni.getStorageSync("urlHos") ? transfer(uni.getStorageSync("urlHos")).url : "http://39.107.74.117:9999/fybj365-abortion-love"
     let lcday = new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + (new Date().getDate() + 3)
     return {
+      url,
       type: true,
       loading: false,
       addBtn: false,
@@ -235,7 +238,7 @@ export default {
           title: '加载中'
         });
         if (this.type) {//新增
-          addFirstConsultation(params).then(res => {
+          addFirstConsultation(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -249,7 +252,7 @@ export default {
             }
           })
         } else {
-          editFirstConsultation(params).then(res => {
+          editFirstConsultation(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -301,7 +304,7 @@ export default {
       await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');
     },
     del () {
-      deleteFirstConsultation({
+      deleteFirstConsultation(this.url, {
         id: this.form.id
       }).then(res => {
         if (res.code == 200) {

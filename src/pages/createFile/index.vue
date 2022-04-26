@@ -38,7 +38,7 @@
             v-model="form[item.value]"
             :placeholder="'请选择'+item.title"
             placeholder-class="placeholder"
-            @focus="popup=true"
+            @focus="getAddress(item.value)"
           />
           <!-- disabled -->
           <picker
@@ -167,6 +167,7 @@ export default {
     this.type = option.type == 1 ? true : false;
     if (option.type == 0) {
       this.form = JSON.parse(decodeURIComponent(option.items));
+      this.form.consultationUnit = this.hos.title;
     }
   },
   data () {
@@ -174,9 +175,11 @@ export default {
     var hos = transfer(uni.getStorageSync("urlHos"))
     return {
       url,
+      hos,
       type: true,
       loading: false,
       popup: false,
+      address: "",
       rules: {
         name: {
           rules: [{
@@ -212,25 +215,25 @@ export default {
         "accountAddressCode": "",//户口地址code
         "accountAddressDetail": "",//户口地址详情
         "accountAddressText": "",//户口地址名称
-        "birthday": "1990-01-01",//出生日期
-        "certNumber": "",//证件号码
-        "certType": "2",//证件类型
+        "birthday": uni.getStorageSync('birthday'),//出生日期
+        "certNumber": uni.getStorageSync('certNumber'),//证件号码
+        "certType": uni.getStorageSync('certTypes'),//证件类型
+        "openid": uni.getStorageSync('openid'),//证件类型
         "childbirthCount": 0,//产次
         "consultationUnit": hos.title,//就诊单位id
         "consultationUnitName": hos.title,//就诊单位名称
         "domicileType": 1,//户籍分类
         "education": 1,//文化程度
         "ethnic": 1,//民族 
-        "gender": "0",//性别 
+        "gender": uni.getStorageSync('sex'),//性别 
         "homeAddressCode": "",//现住地址
         "homeAddressDetail": "",//现住地址详情
         "homeAddressText": "",//现住地址名称
         "homeRegist": 1,//户籍归属
         "id": "",//
-        "name": "",//姓名
+        "name": uni.getStorageSync('name'),//姓名
         "nationality": 43,//国籍
         "occupation": 1,//职业
-        "openid": "",
         "pastHistory": 0,//既往史
         "phone": "",//电话
         "pregnancyCount": 0,//孕次
@@ -330,15 +333,11 @@ export default {
     },
     getInfoList (data) {
       console.log('data', data);
-
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
         this.loading = true;
-        let openid = uni.getStorageSync('openid');
-        this.form.openid = openid
-        this.form.consultationUnit = this.hos.consultationUnit
-        debugger
+        this.form.consultationUnit = this.hos.value
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'
@@ -439,18 +438,35 @@ export default {
       this.$refs.form.validate()
     },
     del () {
-      let archivesId = uni.getStorageSync('archivesId')
+      let archivesId = this.form.id
       this.loading = false;
       deleteArchives(this.url, { id: archivesId }).then(res => {
-
+        uni.hideLoading()
+        if (res.code) {
+          uni.showToast({
+            title: res.message,
+          })
+          setTimeout(() => {
+            uni.switchTab({
+              url: "/pages/file/list",
+              success: function (e) {
+                var page = getCurrentPages().pop();
+                if (page == undefined || page == null) return;
+                page.getInfoList();
+              }
+            })
+          }, 1000);
+        }
       })
     },
     conceal (param) {
       // 获取到传过来的 省 市 区 县数据
-      console.log(param);
-      // 选择完毕后隐藏
+      this.form[this.address] = param.province + param.city + param.area + param.street
       this.popup = false;
-
+    },
+    getAddress (v) {
+      this.popup = true;
+      this.address = v
     }
   },
 }

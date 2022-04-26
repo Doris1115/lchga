@@ -64,7 +64,7 @@ export const deleteFirstFollow = (baseUrl, data) => {
 }
 //编辑首次随访
 export const editFirstFollow = (baseUrl, data) => {
-  return request.globalPostRequest(baseUrl + '/mobile/behindFollow/editFirstFollow', data)
+  return request.globalPostRequest(baseUrl + '/mobile/firstFollow/editFirstFollow', data)
 }
 //后续随访新增
 export const addBehindFollow = (baseUrl, data) => {

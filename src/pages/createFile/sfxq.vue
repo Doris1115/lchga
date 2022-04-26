@@ -15,6 +15,7 @@
           :label="item.title"
           :key="index"
           v-for="(item,index) in coulums"
+          v-show="validateShow(item)"
         >
           <input
             v-if="inputData.includes(item.value)"
@@ -98,6 +99,8 @@ import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
 import { addBehindFollow, deleteBehindFollow, editBehindFollow } from '@/api/main'
 import { mapGetters } from "vuex";
+import { transfer } from "@/utils/verify.js"
+
 export default {
   mixins: [validate],
   components: {
@@ -136,7 +139,9 @@ export default {
     }
   },
   data () {
+    var url = uni.getStorageSync("urlHos") ? transfer(uni.getStorageSync("urlHos")).url : "http://39.107.74.117:9999/fybj365-abortion-love"
     return {
+      url,
       type: true,
       addBtn: false,
       title: "三",
@@ -203,6 +208,13 @@ export default {
       console.log('data', data);
 
     },
+    validateShow (item) {
+      let v = true
+      if (item.value == "replacement") {
+        v = this.form.isUseOther == "0" ? true : false
+      }
+      return v
+    },
     formSubmit () {
       this.$refs.form.validate().then(res => {
         let openid = uni.getStorageSync('openid');
@@ -212,7 +224,7 @@ export default {
         this.form.followTime = this.pickRanges.followTime[this.form.followTime]
         let params = Object.assign({}, this.form);
         if (this.type) {//新增
-          addBehindFollow(params).then(res => {
+          addBehindFollow(this.url, params).then(res => {
             if (res.code == 200) {
               uni.showToast({
                 title: res.message,
@@ -235,7 +247,7 @@ export default {
             }
           })
         } else {
-          editBehindFollow(params).then(res => {
+          editBehindFollow(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code == 200) {
               uni.showToast({
@@ -293,7 +305,7 @@ export default {
       await this.$store.dispatch('GET_FOLLOWMANNER');
     },
     del () {
-      deleteBehindFollow({
+      deleteBehindFollow(this.url, {
         id: this.form.id
       }).then(res => {
         if (res.code == 200) {

@@ -109,6 +109,8 @@ import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
 import { editFirstFollow, deleteFirstFollow, addFirstFollow } from '@/api/main'
 import { mapGetters } from "vuex";
+import { transfer } from "@/utils/verify.js"
+
 export default {
   mixins: [validate],
   components: {
@@ -140,7 +142,9 @@ export default {
 
   },
   data () {
+    var url = uni.getStorageSync("urlHos") ? transfer(uni.getStorageSync("urlHos")).url : "http://39.107.74.117:9999/fybj365-abortion-love"
     return {
+      url,
       type: true,
       loading: false,
       addBtn: false,
@@ -233,7 +237,7 @@ export default {
           title: '加载中'
         });
         if (this.type) {//新增
-          addFirstFollow(params).then(res => {
+          addFirstFollow(this.url, params).then(res => {
             uni.hideLoading()
             uni.showToast({
               title: res.message,
@@ -251,7 +255,7 @@ export default {
             }, 1000);
           })
         } else {
-          editFirstFollow(params).then(res => {
+          editFirstFollow(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -281,9 +285,10 @@ export default {
         v = this.form.isSexLife == "0"
       } else if (item.value == "afterAbortionMenstrualRecover") {
         v = this.form.isMenstrualRecover == "0"
+      } else if (item.value == "replacement") {
+        v = this.form.isGoUse == "0" ? false : true
       }
       return v
-
     },
     validateField () {
       this.$refs.form.validate()
@@ -314,7 +319,7 @@ export default {
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
     },
     del () {
-      deleteFirstFollow({
+      deleteFirstFollow(this.url, {
         id: this.form.id
       }).then(res => {
         if (res.code == 200) {

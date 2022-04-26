@@ -164,6 +164,7 @@
 import { queryFollowList } from '@/api/main'
 import EmptyColumn from "@/pages/components/emptyColumn"
 import { mapGetters } from "vuex";
+import { transfer } from "@/utils/verify.js"
 
 export default {
   components: {
@@ -173,7 +174,9 @@ export default {
     ...mapGetters(["followManner", "gestatePlan", "pregnancyReason"]),
   },
   data () {
+    var url = uni.getStorageSync("urlHos") ? transfer(uni.getStorageSync("urlHos")).url : "http://39.107.74.117:9999/fybj365-abortion-love"
     return {
+      url,
       empty_icon: "/static/icons/empty.png",
       coulums: [],
       name: "",
@@ -201,7 +204,7 @@ export default {
   },
   methods: {
     getInfoList () {
-      queryFollowList({
+      queryFollowList(this.url, {
         archivesId: this.archivesId
       }).then(res => {
         let data = res.result

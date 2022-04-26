@@ -25,6 +25,16 @@
             @blur="validate"
             @input="validate"
           />
+          <input
+            v-if="numData.includes(item.value)"
+            class="input_btn"
+            :name="item.value"
+            type="number"
+            :placeholder="'请输入'+item.title"
+            v-model="form[item.value]"
+            @blur="validate"
+            @input="validate"
+          />
           <picker
             v-if="pickerData.includes(item.value)"
             mode="selector"
@@ -69,10 +79,12 @@
   </view>
 </template>
 <script>
+import { mapGetters } from "vuex";
 import { validateMobile, getUrl, transfer } from "@/utils/verify.js"
 import { saveWXUser, findByOpenid, editWechatUserByOpenid } from "@/api/main.js"
 export default {
   computed: {
+    ...mapGetters(["certType"]),
     startDate () {
       return this.getDate('start');
     },
@@ -81,6 +93,7 @@ export default {
     },
     pickRanges () {
       return {
+        certType: this.certType,
         sex: [{
           text: "女孩",
           title: "女孩",
@@ -94,7 +107,8 @@ export default {
     }
   },
   mounted () {
-    getUrl()
+    getUrl();
+    this.getSelectItem();
   },
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.isAdd = option.isAdd == 1 ? true : false
@@ -120,14 +134,17 @@ export default {
         headimgurl: wxInfo.headimgurl,
         signature: wxInfo.signature,
         tel: wxInfo.tel,
+        certType: "0",
+        certNumber: '',
         unionid: wxInfo.unionid,
       },
       hospital: [],
       hospitalIndex: 1,
       hospitalTotal: [],
-      inputData: ['nickname', 'tel', 'signature'],
+      inputData: ['nickname', 'signature'],
+      numData: ['tel', 'certNumber'],
       pickerDate: ['birthday'],
-      pickerData: ['sex'],
+      pickerData: ['sex', 'certType'],
       coulums: [{
         title: "昵称",
         value: "nickname"
@@ -140,6 +157,12 @@ export default {
       }, {
         title: "联系电话",
         value: "tel"
+      }, {
+        title: "证件类型",
+        value: "certType"
+      }, {
+        title: "证件号码",
+        value: "certNumber"
       }, {
         title: "签名",
         value: "signature"
@@ -227,6 +250,9 @@ export default {
         }
 
       })
+    },
+    async getSelectItem () {
+      await this.$store.dispatch('GET_CERTTYPE');
     },
   },
 }

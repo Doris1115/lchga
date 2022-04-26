@@ -41,7 +41,7 @@ export default {
     ColumnItem,
   },
   data () {
-    var url = transfer(uni.getStorageSync("urlHos")).url
+    var url = uni.getStorageSync("urlHos") ? transfer(uni.getStorageSync("urlHos")).url : "http://39.107.74.117:9999/fybj365-abortion-love"
     return {
       url,
       id: "",
@@ -79,10 +79,18 @@ export default {
       }
     }
   },
-  onLoad () {
-    this.isHosConfirm() && this.getOpenId()
+  mounted () {
+    this.getOpenId()
+    this.onload()
   },
   methods: {
+    onload () {
+      if (!uni.getStorageSync('urlHos')) {
+        uni.navigateTo({
+          url: '/pages/info/hospital'
+        })
+      }
+    },
     getOpenId () {
       let wxInfo = JSON.parse(getQueryString('wxuser') || '{}') || {}
       let openid = wxInfo.openid
@@ -92,12 +100,19 @@ export default {
       this.id = openid;
       if (openid) {
         findByOpenid(this.url, {
-          openid: uni.getStorageSync('openid')
+          openid
         }).then(res => {
           if (!res.result) {
             uni.navigateTo({
               url: '/pages/info/baseInfo?isAdd=1'
             })
+          } else {
+            uni.setStorageSync('name', res.result.nickname);
+            uni.setStorageSync('tel', res.result.tel);
+            uni.setStorageSync('sex', res.result.sex);
+            uni.setStorageSync('birthday', res.result.birthday);
+            uni.setStorageSync('certTypes', res.result.certType);
+            uni.setStorageSync('certNumber', res.result.certNumber);
           }
         })
       }
@@ -107,15 +122,6 @@ export default {
         url: url
       })
     },
-    isHosConfirm () {
-      let v = uni.getStorageSync('urlHos');
-      if (!v) {
-        uni.navigateTo({
-          url: '/pages/info/hospital?isAdd=1'
-        })
-      }
-      return v
-    }
 
   },
 }

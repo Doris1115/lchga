@@ -261,7 +261,7 @@ li {
     margin-top: 20upx;
     height: 600upx;
     overflow-y: auto;
-
+    display: block;
     li {
       border-bottom: 1px solid #f1f1f1;
       padding: 20upx 0;
