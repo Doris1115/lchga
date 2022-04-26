@@ -33,13 +33,17 @@
 <script>
 import ColumnItem from "@/pages/components/columnIndex.vue"
 import { getQueryString } from '@/utils/nav'
+import { findByOpenid } from '@/api/main.js'
+import { getUrl, transfer } from "@/utils/verify.js"
 
 export default {
   components: {
     ColumnItem,
   },
   data () {
+    var url = transfer(uni.getStorageSync("urlHos")).url
     return {
+      url,
       id: "",
       navBar: [{
         url: '/pages/createFile/index?type=1',
@@ -76,7 +80,7 @@ export default {
     }
   },
   onLoad () {
-    this.getOpenId()
+    this.isHosConfirm() && this.getOpenId()
   },
   methods: {
     getOpenId () {
@@ -86,11 +90,16 @@ export default {
       uni.setStorageSync('openid', openid);
       uni.setStorageSync('wxInfo', getQueryString('wxuser'));
       this.id = openid;
-      let url = uni.getStorageSync('urlHos');
-      if (!url) {
-        // uni.navigateTo({
-        //   url: '/pages/info/hospital'
-        // })
+      if (openid) {
+        findByOpenid(this.url, {
+          openid: uni.getStorageSync('openid')
+        }).then(res => {
+          if (!res.result) {
+            uni.navigateTo({
+              url: '/pages/info/baseInfo?isAdd=1'
+            })
+          }
+        })
       }
     },
     navigatorTag (url) {
@@ -98,6 +107,16 @@ export default {
         url: url
       })
     },
+    isHosConfirm () {
+      let v = uni.getStorageSync('urlHos');
+      if (!v) {
+        uni.navigateTo({
+          url: '/pages/info/hospital?isAdd=1'
+        })
+      }
+      return v
+    }
+
   },
 }
 </script>

@@ -28,3 +28,15 @@ export const ChineseWord = (rule, value, callback) => {
     callback();
   }
 }
+export const getUrl = () => {
+  if (!uni.getStorageSync('urlHos')) {
+    uni.navigateTo({
+      url: '/pages/info/hospital'
+    })
+  }
+}
+
+export const transfer = (v) => {
+  return JSON.parse(decodeURIComponent(v));
+}
+

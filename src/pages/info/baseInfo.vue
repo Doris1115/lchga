@@ -21,7 +21,6 @@
             class="input_btn"
             :name="item.value"
             :placeholder="'请输入'+item.title"
-            :disabled="item.value=='nickname'"
             v-model="form[item.value]"
             @blur="validate"
             @input="validate"
@@ -65,12 +64,12 @@
         form-type="submit"
         @click="formSubmit"
         :loading="loading"
-      >保存</button>
+      >{{isAdd?'注册':'保存'}}</button>
     </uni-forms>
   </view>
 </template>
 <script>
-import { validateMobile } from "@/utils/verify.js"
+import { validateMobile, getUrl, transfer } from "@/utils/verify.js"
 import { saveWXUser, findByOpenid, editWechatUserByOpenid } from "@/api/main.js"
 export default {
   computed: {
@@ -95,11 +94,23 @@ export default {
     }
   },
   mounted () {
-    this.init();
+    getUrl()
+  },
+  onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+    this.isAdd = option.isAdd == 1 ? true : false
+    let title = this.isAdd ? "登录注册" : "我的资料"
+    if (!this.isAdd) {
+      this.init();
+    }
+    uni.setNavigationBarTitle({
+      title
+    });
   },
   data () {
     var wxInfo = JSON.parse(uni.getStorageSync("wxInfo"))
+    var url = transfer(uni.getStorageSync("urlHos")).url
     return {
+      url,
       loading: false,
       isAdd: true,
       form: {
@@ -156,7 +167,7 @@ export default {
   },
   methods: {
     init () {
-      findByOpenid({
+      findByOpenid(this.url, {
         openid: uni.getStorageSync('openid')
       }).then(res => {
         this.isAdd = false;
@@ -171,7 +182,7 @@ export default {
       let month = date.getMonth() + 1;
       let day = date.getDate();
       if (type === 'start') {
-        year = year - 10;
+        year = year - 100;
       } else if (type === 'end') {
         year = year + 2;
       }
@@ -191,16 +202,21 @@ export default {
         this.form.openid = uni.getStorageSync('openid');
         let params = Object.assign({}, this.form);
         if (this.isAdd) {
-          saveWXUser({ ...params }).then(res => {
+          saveWXUser(this.url, { ...params }).then(res => {
             this.loading = false;
             if (res.code == 200) {
               uni.showToast({
                 title: res.message,
               })
+              setTimeout(() => {
+                uni.switchTab({
+                  url: '/pages/home/index'
+                })
+              }, 1000);
             }
           })
         } else {
-          editWechatUserByOpenid({ ...params }).then(res => {
+          editWechatUserByOpenid(this.url, { ...params }).then(res => {
             this.loading = false;
             if (res.code == 200) {
               uni.showToast({
@@ -211,7 +227,7 @@ export default {
         }
 
       })
-    }
+    },
   },
 }
 </script>

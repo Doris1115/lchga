@@ -1,6 +1,11 @@
 <template>
   <!-- 档案详情 -->
   <view class="column">
+    <ehPicker
+      @conceal="conceal"
+      v-if="popup"
+      ref="ehpicker"
+    />
     <uni-forms
       :rules="rules"
       :value="form"
@@ -25,7 +30,17 @@
             @blur="validate"
             @input="validate"
             placeholder-class="placeholder"
+            :disabled="item.value=='consultationUnit'"
           />
+          <input
+            v-if="addressData.includes(item.value)"
+            class="input_btn"
+            v-model="form[item.value]"
+            :placeholder="'请选择'+item.title"
+            placeholder-class="placeholder"
+            @focus="popup=true"
+          />
+          <!-- disabled -->
           <picker
             v-else-if="pickerData.includes(item.value)"
             mode="selector"
@@ -72,6 +87,7 @@
               :class='{"placeholder":form[item.value]===""}'
             >{{form[item.value]!==''?form[item.value]:`请输入${item.title}`}}</view>
           </picker>
+
         </uni-forms-item>
       </uni-group>
     </uni-forms>
@@ -99,13 +115,15 @@
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
-import { addArchives, editArchives, deleteArchives } from '@/api/main'
+import { addArchives, editArchives, deleteArchives, getArea } from '@/api/main'
 import { mapGetters } from "vuex";
-import { validateMobile } from "@/utils/verify.js"
+import { validateMobile, getUrl, transfer } from "@/utils/verify.js"
+import ehPicker from '@/pages/components/erha-picker/erha-picker.vue';
 export default {
   mixins: [validate],
   components: {
-    InfoTipPop
+    InfoTipPop,
+    ehPicker
   },
   computed: {
     ...mapGetters(["nationality", "certType", "domicileType", "education", "ethnic", "homeRegist", "occupation", "pastHistory", "presentHistory"]),
@@ -141,6 +159,7 @@ export default {
     }
   },
   mounted () {
+    getUrl()
     this.getSelectItem();
     this.init();
   },
@@ -151,9 +170,13 @@ export default {
     }
   },
   data () {
+    var url = transfer(uni.getStorageSync("urlHos")).url
+    var hos = transfer(uni.getStorageSync("urlHos"))
     return {
+      url,
       type: true,
       loading: false,
+      popup: false,
       rules: {
         name: {
           rules: [{
@@ -161,7 +184,7 @@ export default {
             errorMessage: '姓名不能为空'
           },
           {
-            minLength: 3,
+            minLength: 1,
             maxLength: 15,
             errorMessage: '姓名长度在 {minLength} 到 {maxLength} 个字符'
           }
@@ -181,9 +204,6 @@ export default {
         },
         phone: {
           rules: [{
-            required: true,
-            errorMessage: '联系方式不能为空'
-          }, {
             validateFunction: validateMobile,
           }]
         }
@@ -196,8 +216,8 @@ export default {
         "certNumber": "",//证件号码
         "certType": "2",//证件类型
         "childbirthCount": 0,//产次
-        "consultationUnit": "1246789",//就诊单位id
-        "consultationUnitName": "",//就诊单位名称
+        "consultationUnit": hos.title,//就诊单位id
+        "consultationUnitName": hos.title,//就诊单位名称
         "domicileType": 1,//户籍分类
         "education": 1,//文化程度
         "ethnic": 1,//民族 
@@ -217,10 +237,11 @@ export default {
         "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
       },
-      inputData: ['name', 'accountAddressText', 'homeAddressDetail', 'accountAddressDetail', 'certNumber', 'accountAddressDetail', 'phone', 'consultationUnit'],
+      inputData: ['name', 'accountAddressText', 'certNumber', 'phone', 'consultationUnit'],
       pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
       pickerDate: ['birthday', 'childBirth'],
       numData: ['pregnancyCount', 'childbirthCount',],
+      addressData: ['homeAddressDetail', 'accountAddressDetail',],
       coulums: [{
         title: "姓名",
         value: "name",
@@ -289,7 +310,6 @@ export default {
       }, {
         title: "就诊单位",
         value: "consultationUnit",
-        required: true
       }
       ],
     }
@@ -317,12 +337,14 @@ export default {
         this.loading = true;
         let openid = uni.getStorageSync('openid');
         this.form.openid = openid
+        this.form.consultationUnit = this.hos.consultationUnit
+        debugger
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'
         });
         if (this.type) {
-          addArchives(params).then(res => {
+          addArchives(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -341,7 +363,7 @@ export default {
             }
           })
         } else {
-          editArchives(params).then(res => {
+          editArchives(this.url, params).then(res => {
             uni.hideLoading()
             if (res.code) {
               uni.showToast({
@@ -419,9 +441,16 @@ export default {
     del () {
       let archivesId = uni.getStorageSync('archivesId')
       this.loading = false;
-      deleteArchives({ id: archivesId }).then(res => {
+      deleteArchives(this.url, { id: archivesId }).then(res => {
 
       })
+    },
+    conceal (param) {
+      // 获取到传过来的 省 市 区 县数据
+      console.log(param);
+      // 选择完毕后隐藏
+      this.popup = false;
+
     }
   },
 }

@@ -70,6 +70,8 @@
 </template>
 <script>
 import { queryArchivesList } from '@/api/main'
+import { getUrl, transfer } from "@/utils/verify.js"
+
 import EmptyColumn from "@/pages/components/emptyColumn"
 
 export default {
@@ -77,7 +79,9 @@ export default {
     EmptyColumn,
   },
   data () {
+    var url = transfer(uni.getStorageSync("urlHos")).url
     return {
+      url,
       empty_icon: "/static/icons/empty.png",
       coulums: [],
       dic: {
@@ -88,12 +92,13 @@ export default {
     }
   },
   mounted () {
+    getUrl();
     this.getInfoList();
   },
   methods: {
     getInfoList () {
       let openid = uni.getStorageSync('openid');
-      queryArchivesList({ openid }).then(res => {
+      queryArchivesList(this.url, { openid }).then(res => {
         if (res.code) {
           this.coulums = []
           if (res.result.length > 0) {

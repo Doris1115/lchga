@@ -36,6 +36,13 @@ export default {
   mounted () {
     this.getHosList();
   },
+  onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+    this.isAdd = option.isAdd == 1 ? true : false
+    let title = this.isAdd ? "选择就诊医院" : "就诊医院"
+    uni.setNavigationBarTitle({
+      title
+    });
+  },
   data () {
     return {
       list: [],
@@ -49,8 +56,7 @@ export default {
       queryAreaList().then(res => {
         this.list = []
         if (res.result.length > 0) {
-          this.hosData = res.result[0];
-          uni.setStorageSync('urlHos', this.hosData.tyfwSystem)
+          uni.getStorageSync('urlHos') || this.setHos(res.result[0])
           res.result.map(item => {
             this.list.push({
               text: item.consultationUnitName,
@@ -62,20 +68,28 @@ export default {
         }
       })
     },
+    setHos (v) {
+      uni.setStorageSync('urlHos', encodeURIComponent(JSON.stringify(v)))
+    },
     bindPickerChange (e) {
       this.form = e.detail.value;
     },
     formSubmit () {
       this.loading = true;
       this.hosData = this.list[this.form];
-      uni.setStorageSync('urlHos', this.hosData.tyfwSystem);
+      uni.setStorageSync('urlHos', encodeURIComponent(JSON.stringify(this.hosData)));
       setTimeout(() => {
         this.loading = false;
         uni.showToast({
           title: '选择就诊医院成功',
         });
         uni.switchTab({
-          url: "/pages/home/index"
+          url: "/pages/home/index",
+          success: function (e) {
+            var page = getCurrentPages().pop();
+            if (page == undefined || page == null) return;
+            page.getOpenId();
+          }
         })
       }, 300);
     }
