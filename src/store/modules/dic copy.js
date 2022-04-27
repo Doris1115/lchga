@@ -105,8 +105,9 @@ const dic = {
     GET_CERTTYPE: ({ commit }) => {
       return new Promise(res => {
         card().then(resolve => {
-          commit('Set_CertType', resolve.result)
+          dic.state.certType.length > 0 || commit('Set_CertType', resolve.result)
           uni.setStorageSync('certType', true)
+
           res();
         });
       })

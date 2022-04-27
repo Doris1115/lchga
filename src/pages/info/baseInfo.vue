@@ -1,4 +1,5 @@
 <template>
+  <!-- 我的资料 -->
   <view class="column">
     <uni-forms
       :rules="rules"
@@ -252,8 +253,10 @@ export default {
 
       })
     },
-    async getSelectItem () {
-      await this.$store.dispatch('GET_CERTTYPE');
+    getSelectItem () {
+      if (this.certType.length == 0) {
+        this.$store.dispatch('GET_CERTTYPE');
+      }
     },
   },
 }

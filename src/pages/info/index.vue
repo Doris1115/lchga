@@ -1,5 +1,6 @@
 <template>
   <view class="wrap">
+    <!-- 我的信息 -->
     <view class="head_info clear-fix">
       <view class="pull-left image_cxt">
         <image
