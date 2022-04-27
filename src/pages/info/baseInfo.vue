@@ -242,6 +242,7 @@ export default {
           editWechatUserByOpenid(this.url, { ...params }).then(res => {
             this.loading = false;
             if (res.code == 200) {
+              uni.setStorageSync("birthday", params.birthday)
               uni.showToast({
                 title: res.message,
               })

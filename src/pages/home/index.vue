@@ -46,7 +46,7 @@ export default {
       url,
       id: "",
       navBar: [{
-        url: '/pages/createFile/index?type=1',
+        url: '/pages/file/list',
         icon: "/static/image/jgyjx.png",
         title: "关爱服务"
       }, {
@@ -118,9 +118,15 @@ export default {
       }
     },
     navigatorTag (url) {
-      uni.navigateTo({
-        url: url
-      })
+      if (url == '/pages/file/list') {
+        uni.switchTab({
+          url: url
+        })
+      } else {
+        uni.navigateTo({
+          url: url
+        })
+      }
     },
 
   },

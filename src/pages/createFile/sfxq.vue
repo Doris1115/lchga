@@ -92,9 +92,12 @@
       :type="msgType"
       :message="messageText"
     />
+    <back-home />
   </view>
 </template>
 <script>
+import BackHome from "@/pages/components/backHome.vue"
+
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
 import { addBehindFollow, deleteBehindFollow, editBehindFollow } from '@/api/main'
@@ -104,7 +107,8 @@ import { transfer } from "@/utils/verify.js"
 export default {
   mixins: [validate],
   components: {
-    InfoTipPop
+    InfoTipPop,
+    BackHome
   },
   computed: {
     ...mapGetters(["yesno", "planContraceptionMethod", 'followManner']),

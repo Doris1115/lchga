@@ -37,11 +37,13 @@
         </uni-list-item>
       </uni-list>
     </view>
-    <view class="login-out">
+    <view
+      class="login-out"
+      v-if="false"
+    >
       <button
         type="primary"
         class="submit_btn"
-        @click="addChild"
       >退出登录</button>
     </view>
   </view>

@@ -101,19 +101,21 @@
       :type="msgType"
       :message="messageText"
     />
+    <back-home />
   </view>
 </template>
 <script>
 import InfoTipPop from "@/pages/components/infoTipPop"
 import validate from '@/mixins/validate'
 import { transfer } from "@/utils/verify.js"
-
+import BackHome from "@/pages/components/backHome.vue"
 import { addFirstConsultation, editFirstConsultation, deleteFirstConsultation } from '@/api/main'
 import { mapGetters } from "vuex";
 export default {
   mixins: [validate],
   components: {
-    InfoTipPop
+    InfoTipPop,
+    BackHome
   },
   computed: {
     ...mapGetters(["gestatePlan", "planAbortionTime", "planContraceptionMethod", "planContraceptionTime", "pregnancyReason"]),

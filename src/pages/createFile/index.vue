@@ -235,7 +235,7 @@ export default {
         "nationality": 43,//国籍
         "occupation": 1,//职业
         "pastHistory": 0,//既往史
-        "phone": "",//电话
+        "phone": uni.getStorageSync('tel'),//电话
         "pregnancyCount": 0,//孕次
         "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
@@ -401,7 +401,7 @@ export default {
       let month = date.getMonth() + 1;
       let day = date.getDate();
       if (type === 'start') {
-        year = year - 10;
+        year = year - 100;
       } else if (type === 'end') {
         year = year + 2;
       }
