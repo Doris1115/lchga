@@ -145,17 +145,29 @@ export default {
         pastHistory: this.pastHistory,
         presentHistory: this.presentHistory,
         gender: [{
-          text: "女孩",
-          title: "女孩",
+          text: "女",
+          title: "女",
           value: "10"
         }, {
-          text: "男孩",
-          title: "男孩",
+          text: "男",
+          title: "男",
           value: "21"
         }],
         childbirthCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         pregnancyCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       }
+    }
+  },
+  watch: {
+    "form.certNumber": {
+      handler (val) {
+        if (this.form.certType == 0) {
+          if (this.cardid(val)) {
+            this.form.birthday = val.slice(6, 10) + "-" + val.slice(10, 12) + "-" + val.slice(12, 14)
+          }
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
@@ -203,6 +215,8 @@ export default {
           rules: [{
             required: true,
             errorMessage: '证件号不能为空'
+          }, {
+            validateFunction: this.validateCerNum,
           }]
         },
         phone: {
@@ -214,7 +228,6 @@ export default {
       form: {
         "accountAddressCode": "",//户口地址code
         "accountAddressDetail": "",//户口地址详情
-        "accountAddressText": "",//户口地址名称
         "birthday": uni.getStorageSync('birthday'),//出生日期
         "certNumber": uni.getStorageSync('certNumber'),//证件号码
         "certType": uni.getStorageSync('certTypes'),//证件类型
@@ -240,7 +253,7 @@ export default {
         "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
       },
-      inputData: ['name', 'accountAddressText', 'certNumber', 'phone', 'consultationUnit'],
+      inputData: ['name', 'certNumber', 'phone', 'consultationUnit'],
       pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
       pickerDate: ['birthday', 'childBirth'],
       numData: ['pregnancyCount', 'childbirthCount',],
@@ -253,10 +266,6 @@ export default {
         title: "性别",
         value: "gender",
         required: true
-      }, {
-        title: "出生年月",
-        value: "birthday",
-        required: true
       },
       {
         title: "证件类型",
@@ -264,6 +273,10 @@ export default {
       }, {
         title: "证件号",
         value: "certNumber",
+        required: true
+      }, {
+        title: "出生年月",
+        value: "birthday",
         required: true
       },
       {
@@ -274,18 +287,14 @@ export default {
         title: "民族",
         value: "ethnic"
       }, {
-        title: "户籍",
-        value: "accountAddressText"
-      }, {
         title: "户籍分类",
         value: "domicileType"
       }, {
         title: "户籍归属",
         value: "homeRegist"
       }, {
-        title: "联系方式",
+        title: "手机",
         value: "phone",
-        // required: true
       }, {
         title: "文化程度",
         value: "education"
@@ -467,6 +476,21 @@ export default {
     getAddress (v) {
       this.popup = true;
       this.address = v
+    },
+    cardid (code) {
+      var regIdNo = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+      if (!regIdNo.test(code)) {
+        return false;
+      }
+      return true
+    },
+    validateCerNum (rule, value, data, callback) {
+      if (this.form.certType == '0') {
+        if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value)) {
+          callback("请输入正确的证件号码");
+        }
+      }
+      return true;
     }
   },
 }

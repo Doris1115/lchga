@@ -96,15 +96,27 @@ export default {
       return {
         certType: this.certType,
         sex: [{
-          text: "女孩",
-          title: "女孩",
+          text: "女",
+          title: "女",
           value: "0"
         }, {
-          text: "男孩",
-          title: "男孩",
+          text: "男",
+          title: "男",
           value: "1"
         }],
       }
+    }
+  },
+  watch: {
+    "form.certNumber": {
+      handler (val) {
+        if (this.form.certType == 0) {
+          if (this.cardid(val)) {
+            this.form.birthday = val.slice(6, 10) + "-" + val.slice(10, 12) + "-" + val.slice(12, 14)
+          }
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
@@ -142,28 +154,32 @@ export default {
       hospital: [],
       hospitalIndex: 1,
       hospitalTotal: [],
-      inputData: ['nickname', 'signature'],
-      numData: ['tel', 'certNumber'],
+      inputData: ['nickname', 'signature', 'certNumber'],
+      numData: ['tel'],
       pickerDate: ['birthday'],
       pickerData: ['sex', 'certType'],
       coulums: [{
-        title: "昵称",
-        value: "nickname"
+        title: "姓名",
+        value: "nickname",
+        required: true
       }, {
         title: "性别",
-        value: "sex"
+        value: "sex",
       }, {
-        title: "出生日期",
-        value: "birthday"
-      }, {
-        title: "联系电话",
-        value: "tel"
+        title: "手机",
+        value: "tel",
+        required: true
       }, {
         title: "证件类型",
-        value: "certType"
+        value: "certType",
       }, {
         title: "证件号码",
-        value: "certNumber"
+        value: "certNumber",
+        required: true
+      }, {
+        title: "出生年月",
+        value: "birthday",
+        required: true
       }, {
         title: "签名",
         value: "signature"
@@ -184,6 +200,14 @@ export default {
         tel: {
           rules: [{
             validateFunction: validateMobile,
+          }]
+        },
+        certNumber: {
+          rules: [{
+            required: true,
+            errorMessage: '证件号不能为空'
+          }, {
+            validateFunction: this.validateCerNum,
           }]
         }
       },
@@ -258,6 +282,21 @@ export default {
         this.$store.dispatch('GET_CERTTYPE');
       }
     },
+    cardid (code) {
+      var regIdNo = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+      if (!regIdNo.test(code)) {
+        return false;
+      }
+      return true
+    },
+    validateCerNum (rule, value, data, callback) {
+      if (this.form.certType == '0') {
+        if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value)) {
+          callback("请输入正确的证件号码");
+        }
+      }
+      return true;
+    }
   },
 }
 </script>

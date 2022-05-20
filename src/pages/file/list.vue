@@ -43,7 +43,7 @@
                 class="status"
                 :class="{active:items.domicileType=='0'
                 }"
-              >{{items.domicileType=="0"?"已建档":"已结案"}}</view>
+              >{{items.domicileType=="0"?"已建档":"未结案"}}</view>
               <navigator
                 class="sf-list"
                 :url="'/pages/sfList/index?name='+items.name+'&archivesId='+items.id"
@@ -80,8 +80,10 @@ export default {
   },
   data () {
     var url = transfer(uni.getStorageSync("urlHos")).url
+    var hos = transfer(uni.getStorageSync("urlHos")).title
     return {
       url,
+      hos,
       empty_icon: "/static/icons/empty.png",
       coulums: [],
       dic: {
@@ -105,7 +107,7 @@ export default {
             res.result.map(v => {
               this.coulums.push({
                 ...v,
-                addUnitName: v.treatmentUnitName,
+                addUnitName: this.hos,
                 name: v.name,
                 consultationTime: v.createDate,
                 domicileType: v.domicileType,
