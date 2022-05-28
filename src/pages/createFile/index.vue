@@ -346,7 +346,7 @@ export default {
     formSubmit () {
       this.$refs.form.validate().then(res => {
         this.loading = true;
-        this.form.consultationUnit = this.hos.value
+        this.form.consultationUnit = this.hos.consultationUnit
         let params = Object.assign({}, this.form);
         uni.showLoading({
           title: '加载中'

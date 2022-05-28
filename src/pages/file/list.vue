@@ -41,9 +41,12 @@
               </uni-row>
               <view
                 class="status"
-                :class="{active:items.domicileType=='0'
+                :class="{active:items.endReason!=='1'
                 }"
-              >{{items.domicileType=="0"?"已建档":"未结案"}}</view>
+              >
+                {{items.endReason=="0"?"未结案":items.endReason=="1"?"正常结束":items.endReason=="2"?"再次怀孕":items.endReason=="3"?"转往外地":"其他"}}
+                <!-- {{items.domicileType=="0"?"未结案":items.domicileType=="1"?"正常结束":items.domicileType=="2"?"再次怀孕":items.domicileType=="3"?"转往外地":"其他"}} -->
+              </view>
               <navigator
                 class="sf-list"
                 :url="'/pages/sfList/index?name='+items.name+'&archivesId='+items.id"

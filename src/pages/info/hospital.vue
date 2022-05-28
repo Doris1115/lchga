@@ -61,9 +61,11 @@ export default {
           uni.getStorageSync('urlHos') || this.setHos(res.result[0])
           res.result.map(item => {
             this.list.push({
-              text: item.consultationUnitName,
+              text: item.treatmentUnitName,
+              value: item.treatmentUnit,
               title: item.consultationUnitName,
-              value: item.id,
+              id: item.id,
+              consultationUnit: item.consultationUnit,
               url: item.tyfwSystem
             })
           });
