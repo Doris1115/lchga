@@ -46,6 +46,16 @@
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
+              v-if="coulumnsSelect.includes(item.value)"
+            >
+              {{{...pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}.text}}
+            </view>
+            <view
+              v-else
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
             >
               {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
             </view>
@@ -118,7 +128,7 @@ export default {
     BackHome
   },
   computed: {
-    ...mapGetters(["gestatePlan", "planAbortionTime", "planContraceptionMethod", "planContraceptionTime", "pregnancyReason"]),
+    ...mapGetters(["gestatePlan", "planAbortionTime", "planContraceptionMethod", "planContraceptionMethodNi", "planContraceptionTime", "pregnancyReason"]),
     startDate () {
       return this.getDate('start');
     },
@@ -130,7 +140,7 @@ export default {
         "contraceptionMethod": this.planContraceptionMethod,//目前避孕方法
         "gestatePlan": this.gestatePlan,//近期孕育计划 
         "planAbortionManner": this.planAbortionTime,//拟流产方式 
-        "planContraceptionMethod": this.planContraceptionMethod,//拟避孕方法
+        "planContraceptionMethod": this.planContraceptionMethodNi,//拟避孕方法
         "pregnancyReason": this.pregnancyReason,//本次妊娠原因
         "planContraceptionTime": this.planContraceptionTime,//拟避孕时间
       }
@@ -181,6 +191,7 @@ export default {
       pickerData: ['contraceptionMethod', 'pregnancyReason', 'gestatePlan', 'planAbortionManner', 'planContraceptionMethod', 'planContraceptionTime'],
       pickerDate: ['planAbortionTime'],
       numData: ['stopMensesDayCount',],
+      coulumnsSelect: [],
       coulums: [{
         title: "姓名",
         value: "name",
@@ -301,6 +312,7 @@ export default {
       await this.$store.dispatch('GET_GESTATEPLAN');
       await this.$store.dispatch('GET_PLANABORTIOMTIME');
       await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHOD');
+      await this.$store.dispatch('GET_PLANCONTRACEPTIONMETHODNI');
       await this.$store.dispatch('GET_YESNO');
       await this.$store.dispatch('GET_PREGNANCYREASON');
       await this.$store.dispatch('GET_PLANCONTRACEPTIOMTIME');

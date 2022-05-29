@@ -9,6 +9,7 @@ import {
   past_history,//既往史
   present_history,//现病史
   byMethod,//目前避孕方法
+  byMethodNi,//拟避孕方法
   byPlan,//近期孕育计划
   lcMethod,//拟流产方式
   byTime,//拟避孕时间
@@ -30,7 +31,8 @@ const dic = {
     pastHistory: [],//既往史
     gestatePlan: [],//近期孕育计划
     planAbortionTime: [],//拟流产方式
-    planContraceptionMethod: [],//拟避孕方法
+    planContraceptionMethod: [],//目前避孕方法
+    planContraceptionMethodNi: [],//拟避孕方法
     planContraceptionTime: [],//拟避孕时间
     pregnancyReason: [],//妊娠原因
     presentHistory: [],//现病史
@@ -75,6 +77,9 @@ const dic = {
     },
     Set_PlanContraceptionMethod (state, value) {
       state.planContraceptionMethod = value
+    },
+    Set_PlanContraceptionMethodNi (state, value) {
+      state.planContraceptionMethodNi = value
     },
     Set_PlanContraceptionTime (state, value) {
       state.planContraceptionTime = value
@@ -198,6 +203,15 @@ const dic = {
         byMethod().then(resolve => {
           dic.state.planContraceptionMethod.length > 0 || commit('Set_PlanContraceptionMethod', resolve.result)
           uni.setStorageSync('planContraceptionMethod', true)
+          res();
+        });
+      })
+    },
+    GET_PLANCONTRACEPTIONMETHODNI: ({ commit }) => {
+      return new Promise(res => {
+        byMethodNi().then(resolve => {
+          dic.state.planContraceptionMethodNi.length > 0 || commit('Set_PlanContraceptionMethodNi', resolve.result)
+          uni.setStorageSync('planContraceptionMethodNi', true)
           res();
         });
       })

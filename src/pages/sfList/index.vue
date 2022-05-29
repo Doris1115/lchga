@@ -204,9 +204,13 @@ export default {
   },
   methods: {
     getInfoList () {
+      uni.showLoading({
+        title: '加载中'
+      });
       queryFollowList(this.url, {
         archivesId: this.archivesId
       }).then(res => {
+        uni.hideLoading()
         let data = res.result
         if (data.firstConsultation) {
           this.firstConsultation = data.firstConsultation;
@@ -246,7 +250,9 @@ export default {
       if (this.firstConsultation && !this.firstFollow) {
         url = "/pages/createFile/scsf?type=1"
       } else if (this.firstConsultation && this.firstFollow) {
-        url = "/pages/createFile/sfxq?type=1"
+        let a = this.coulums.map(v => { return v.followTime })
+        let v = !a.includes(3) ? 3 : !a.includes(6) ? 6 : !a.includes(12) ? 12 : 24
+        url = "/pages/createFile/sfxq?type=1&month=" + v
       }
       uni.navigateTo({
         url

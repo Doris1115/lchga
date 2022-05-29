@@ -40,6 +40,10 @@ export const present_history = () => {
 export const byMethod = () => {
   return request.globalRequest(baseUrl + 'abortion_love_contraception_method')
 }
+//拟避孕方法
+export const byMethodNi = () => {
+  return request.globalRequest(baseUrl + 'abortion_love_intend_abortion_method')
+}
 //近期孕育计划
 export const byPlan = () => {
   return request.globalRequest(baseUrl + 'abortion_love_inoculation_plan')

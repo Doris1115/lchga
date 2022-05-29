@@ -50,7 +50,21 @@
             range-key="title"
             :name="item.value"
           >
+            <!-- {{pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}} -->
             <view
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
+              v-if="coulumnsSelect.includes(item.value)"
+            >
+              {{{...pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}.text}}
+            </view>
+
+            <view
+              v-else
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
             >
@@ -147,11 +161,11 @@ export default {
         gender: [{
           text: "女",
           title: "女",
-          value: "10"
+          value: "2"
         }, {
           text: "男",
           title: "男",
-          value: "21"
+          value: "1"
         }],
         childbirthCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         pregnancyCount: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -235,18 +249,18 @@ export default {
         "childbirthCount": 0,//产次
         "consultationUnit": hos.title,//就诊单位id
         "consultationUnitName": hos.title,//就诊单位名称
-        "domicileType": 1,//户籍分类
-        "education": 1,//文化程度
-        "ethnic": 1,//民族 
+        "domicileType": '1',//户籍分类
+        "education": '1',//文化程度
+        "ethnic": '01',//民族 
         "gender": uni.getStorageSync('sex'),//性别 
         "homeAddressCode": "",//现住地址
         "homeAddressDetail": "",//现住地址详情
         "homeAddressText": "",//现住地址名称
-        "homeRegist": 1,//户籍归属
+        "homeRegist": '1',//户籍归属
         "id": "",//
         "name": uni.getStorageSync('name'),//姓名
-        "nationality": 43,//国籍
-        "occupation": 1,//职业
+        "nationality": 44,//国籍
+        "occupation": '04',//职业
         "pastHistory": 0,//既往史
         "phone": uni.getStorageSync('tel'),//电话
         "pregnancyCount": 0,//孕次
@@ -258,6 +272,7 @@ export default {
       pickerDate: ['birthday', 'childBirth'],
       numData: ['pregnancyCount', 'childbirthCount',],
       addressData: ['homeAddressDetail', 'accountAddressDetail',],
+      coulumnsSelect: ['certType', 'ethnic', 'education', 'gender', 'occupation', 'homeRegist', 'nationality'],
       coulums: [{
         title: "姓名",
         value: "name",
@@ -341,13 +356,13 @@ export default {
       return JSON.parse(decodeURIComponent(v));
     },
     getInfoList (data) {
-      console.log('data', data);
+
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
         this.loading = true;
-        this.form.consultationUnit = this.hos.consultationUnit
         let params = Object.assign({}, this.form);
+        params.consultationUnit = this.hos.consultationUnit
         uni.showLoading({
           title: '加载中'
         });
@@ -401,9 +416,6 @@ export default {
       )
 
     },
-    formReset () {
-
-    },
     getDate (type) {
       const date = new Date();
       let year = date.getFullYear();
@@ -419,10 +431,12 @@ export default {
       return `${year}-${month}-${day}`;
     },
     bindPickerChange (e, v) {
-      // if (v == 'currentType') {
-      //   this.formReset();
-      // }
-      this.form[v] = e.detail.value;
+      if (this.coulumnsSelect.includes
+        (v)) {
+        this.form[v] = this.pickRanges[v][e.detail.value].value;
+      } else {
+        this.form[v] = e.detail.value;
+      }
     },
     async getSelectItem () {
       await this.$store.dispatch('GET_NATIONALITY');

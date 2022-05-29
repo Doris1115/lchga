@@ -47,6 +47,16 @@
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
+              v-if="coulumnsSelect.includes(item.value)"
+            >
+              {{{...pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}.text}}
+            </view>
+            <view
+            v-else
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
             >
               {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
             </view>
@@ -179,6 +189,7 @@ export default {
       pickerData: ['isSexLife', 'isMenstrualRecover', 'menstrual', 'contraceptionMethod', 'isGoUse', 'replacement'],
       pickerDate: ['planAbortionTime'],
       numData: ['afterAbortionDayRecover', 'afterAbortionMenstrualRecover', 'afterAbortionBloodDay'],
+      coulumnsSelect: ['isSexLife', 'isMenstrualRecover', 'isGoUse'],
       coulums: [{
         title: "姓名",
         value: "name",
@@ -285,11 +296,11 @@ export default {
     validateShow (item) {
       let v = true
       if (item.value == 'afterAbortionDayRecover') {
-        v = this.form.isSexLife == "0"
+        v = this.form.isSexLife == "1"
       } else if (item.value == "afterAbortionMenstrualRecover") {
-        v = this.form.isMenstrualRecover == "0"
+        v = this.form.isMenstrualRecover == "1"
       } else if (item.value == "replacement") {
-        v = this.form.isGoUse == "0" ? false : true
+        v = this.form.isGoUse == "0" ? true : false
       }
       return v
     },
@@ -311,10 +322,12 @@ export default {
       return `${year}-${month}-${day}`;
     },
     bindPickerChange (e, v) {
-      // if (v == 'currentType') {
-      //   this.formReset();
-      // }
-      this.form[v] = e.detail.value;
+      if (this.coulumnsSelect.includes
+        (v)) {
+        this.form[v] = this.pickRanges[v][e.detail.value].value;
+      } else {
+        this.form[v] = e.detail.value;
+      }
     },
     async getSelectItem () {
       await this.$store.dispatch('GET_YYLYPSB');

@@ -48,6 +48,16 @@
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
+              v-if="coulumnsSelect.includes(item.value)"
+            >
+              {{{...pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}.text}}
+            </view>
+            <view
+              v-else
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
             >
               {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
               <!-- {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}} -->
@@ -98,7 +108,7 @@ export default {
         sex: [{
           text: "女",
           title: "女",
-          value: "0"
+          value: "2"
         }, {
           text: "男",
           title: "男",
@@ -142,12 +152,12 @@ export default {
       isAdd: true,
       form: {
         nickname: wxInfo.nickname,
-        sex: wxInfo.sex ? wxInfo.sex : 0,
+        sex: wxInfo.sex == 0 ? 2 : 1,
         birthday: "1990-01-01",
         headimgurl: wxInfo.headimgurl,
         signature: wxInfo.signature,
         tel: wxInfo.tel,
-        certType: "0",
+        certType: "01",
         certNumber: '',
         unionid: wxInfo.unionid,
       },
@@ -158,6 +168,7 @@ export default {
       numData: ['tel'],
       pickerDate: ['birthday'],
       pickerData: ['sex', 'certType'],
+      coulumnsSelect: ['certType', 'sex'],
       coulums: [{
         title: "姓名",
         value: "nickname",
@@ -239,7 +250,12 @@ export default {
       return `${year}-${month}-${day}`;
     },
     bindPickerChange (e, v) {
-      this.form[v] = e.detail.value;
+      if (this.coulumnsSelect.includes
+        (v)) {
+        this.form[v] = this.pickRanges[v][e.detail.value].value;
+      } else {
+        this.form[v] = e.detail.value;
+      }
     },
     validate (val) {
       this.$refs.form.validate()

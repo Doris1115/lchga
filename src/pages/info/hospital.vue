@@ -55,7 +55,11 @@ export default {
   },
   methods: {
     getHosList () {
+      uni.showLoading({
+        title: '加载中'
+      });
       queryAreaList().then(res => {
+        uni.hideLoading()
         this.list = []
         if (res.result.length > 0) {
           uni.getStorageSync('urlHos') || this.setHos(res.result[0])

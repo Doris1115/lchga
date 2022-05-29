@@ -11,6 +11,7 @@ const getters = {
   gestatePlan: state => state.dic.gestatePlan,
   planAbortionTime: state => state.dic.planAbortionTime,
   planContraceptionMethod: state => state.dic.planContraceptionMethod,
+  planContraceptionMethodNi: state => state.dic.planContraceptionMethodNi,
   planContraceptionTime: state => state.dic.planContraceptionTime,
   pregnancyReason: state => state.dic.pregnancyReason,
   yesno: state => state.dic.yesno,

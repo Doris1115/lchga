@@ -38,6 +38,16 @@
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
+              v-if="coulumnsSelect.includes(item.value)"
+            >
+              {{{...pickRanges[item.value].find(v=>{
+              return v.value==form[item.value]
+            })}.text}}
+            </view>
+            <view
+            v-else
+              class="input_btn"
+              :class='{"placeholder":form[item.value]===""}'
             >
               {{form[item.value]!==''?{...[...pickRanges[item.value]][form[item.value]]}.text:`请输入${item.title}`}}
             </view>
@@ -131,6 +141,7 @@ export default {
   onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
     this.type = option.type == 1 || option.type == 3 ? true : false;
     this.addBtn = option.type == 3 ? true : false
+    this.form.followTime = option.month == 3 ? 0 : option.month == 6 ? 1 : option.month == 12 ? 2 : 3
     if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
       this.title = this.form.followTime == 3 ? "三" : this.form.followTime == 6 ? "六" : this.form.followTime == 12 ? "十二" : "二十四"
@@ -168,6 +179,7 @@ export default {
       inputData: ['name', 'problem', 'reason'],
       pickerData: ['contraceptionMethod', 'followManner', 'isGoUse', 'isUseOther', 'replacement', 'surprisePregnancy'],
       numData: ['followTime'],
+      coulumnsSelect: ['isUseOther', 'surprisePregnancy', 'isGoUse'],
       coulums: [{
         title: "姓名",
         value: "name",
@@ -215,7 +227,7 @@ export default {
     validateShow (item) {
       let v = true
       if (item.value == "replacement") {
-        v = this.form.isUseOther == "0" ? true : false
+        v = this.form.isUseOther == "0" ? false : true
       }
       return v
     },
@@ -298,10 +310,12 @@ export default {
       return `${year}-${month}-${day}`;
     },
     bindPickerChange (e, v) {
-      // if (v == 'currentType') {
-      //   this.formReset();
-      // }
-      this.form[v] = e.detail.value;
+      if (this.coulumnsSelect.includes
+        (v)) {
+        this.form[v] = this.pickRanges[v][e.detail.value].value;
+      } else {
+        this.form[v] = e.detail.value;
+      }
     },
     async getSelectItem () {
       await this.$store.dispatch('GET_YESNO');

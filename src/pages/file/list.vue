@@ -103,7 +103,11 @@ export default {
   methods: {
     getInfoList () {
       let openid = uni.getStorageSync('openid');
+      uni.showLoading({
+        title: '加载中'
+      });
       queryArchivesList(this.url, { openid }).then(res => {
+        uni.hideLoading()
         if (res.code) {
           this.coulums = []
           if (res.result.length > 0) {
