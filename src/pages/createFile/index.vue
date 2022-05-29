@@ -242,6 +242,7 @@ export default {
       form: {
         "accountAddressCode": "",//户口地址code
         "accountAddressDetail": "",//户口地址详情
+        "accountAddressText": "",//户口地址详情
         "birthday": uni.getStorageSync('birthday'),//出生日期
         "certNumber": uni.getStorageSync('certNumber'),//证件号码
         "certType": uni.getStorageSync('certTypes'),//证件类型
@@ -267,11 +268,11 @@ export default {
         "presentHistory": 0,//现病史
         "workUnit": "",//工作单位
       },
-      inputData: ['name', 'certNumber', 'phone', 'consultationUnit'],
+      inputData: ['name', 'certNumber', 'phone', 'consultationUnit', 'accountAddressDetail', 'homeAddressDetail'],
       pickerData: ['gender', "certType", 'nationality', 'ethnic', 'domicileType', 'homeRegist', 'education', 'occupation', 'pastHistory', 'presentHistory'],
       pickerDate: ['birthday', 'childBirth'],
       numData: ['pregnancyCount', 'childbirthCount',],
-      addressData: ['homeAddressDetail', 'accountAddressDetail',],
+      addressData: ['accountAddressText', 'homeAddressText',],
       coulumnsSelect: ['certType', 'ethnic', 'education', 'gender', 'occupation', 'homeRegist', 'nationality'],
       coulums: [{
         title: "姓名",
@@ -318,9 +319,15 @@ export default {
         value: "occupation"
       }, {
         title: "现住址",
+        value: "homeAddressText"
+      }, {
+        title: "现住址详情",
         value: "homeAddressDetail"
       }, {
         title: "户籍地址",
+        value: "accountAddressText"
+      }, {
+        title: "户籍地址详情",
         value: "accountAddressDetail"
       }, {
         title: "怀孕次数",
@@ -484,6 +491,13 @@ export default {
     },
     conceal (param) {
       // 获取到传过来的 省 市 区 县数据
+      if (this.address == 'homeAddressDetail') {
+        this.form.homeAddressCode = param.areaCode
+        // this.form.homeAddressCode = param.areaCode
+      } else if (this.address == 'accountAddressDetail') {
+        this.form.accountAddressCode = param.areaCode
+        // this.form.accountAddressCode = param.areaCode
+      }
       this.form[this.address] = param.province + param.city + param.area + param.street
       this.popup = false;
     },

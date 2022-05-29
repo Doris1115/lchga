@@ -29,7 +29,7 @@
         :style="'height:'+ heightCot + 'upx'"
       >
         <li
-          @click="selectPro(index,item.label)"
+          @click="selectPro(index,item.label,item.value)"
           v-for="(item,index) in provinceData"
           :key="index"
         >{{item.label}}</li>
@@ -41,7 +41,7 @@
         :style="'height:'+ heightCot + 'upx'"
       >
         <li
-          @click="selectCity(index,item.label)"
+          @click="selectCity(index,item.label,item.value)"
           v-for="(item,index) in cityData"
           :key="index"
         >{{item.label}}</li>
@@ -53,7 +53,7 @@
         :style="'height:'+ heightCot + 'upx'"
       >
         <li
-          @click="selectaArea(index,item.label)"
+          @click="selectaArea(index,item.label,item.value)"
           v-for="(item,index) in areaData"
           :key="index"
         >{{item.label}}</li>
@@ -83,8 +83,11 @@ export default {
   data () {
     return {
       province: "请选择",
+      provinceCode: "",
       city: "请选择",
+      cityCode: "",
       area: "请选择",
+      areaCode: "",
       street: "请选择",
       cityDataAll: '', // 市的所有數據
       getAreaAll: '', // 区的所有数据
@@ -146,33 +149,36 @@ export default {
           break;
       }
     },
-    selectPro (index, label) {
+    selectPro (index, label, value) {
       // console.log(index)
       const {
         cityDataAll
       } = this;
       this.proIndex = index; // 当前省的下标
       this.province = label;
+      this.provinceCode = value;
       this.cityData = cityDataAll[index];
       this.showIndex = 1;
 
     },
-    selectCity (index, label) {
+    selectCity (index, label, value) {
       const {
         proIndex
       } = this;
       // console.log(this.getAreaAll)
       this.city = label;
+      this.cityCode = value;
       this.cityIndex = index; // 当前市的下标
       this.areaData = this.getAreaAll[proIndex][index];
       this.showIndex = 2;
     },
-    selectaArea (index, label) {
+    selectaArea (index, label, value) {
       const {
         proIndex,
         cityIndex
       } = this;
       this.area = label;
+      this.areaCode = value;
       this.showIndex = 3;
       // console.log(index)
       // console.log(this.getStreetsAll[proIndex][cityIndex])
@@ -185,13 +191,19 @@ export default {
         province,
         city,
         area,
-        street
+        street,
+        provinceCode,
+        cityCode,
+        areaCode,
       } = this;
       this.$emit('conceal', {
         province,
+        provinceCode,
         city,
         area,
-        street
+        street,
+        cityCode,
+        areaCode,
       })
       // this.showIndex = 4;
     }

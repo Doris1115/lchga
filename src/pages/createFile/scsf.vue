@@ -167,7 +167,7 @@ export default {
         "afterAbortionDayRecover": 60,//性生活流产后多少天恢复
         "afterAbortionMenstrualRecover": 40,//月经流产后多少天恢复
         "archivesId": uni.getStorageSync('archivesId'),
-        "consultationFocus": 0,//重点咨询内容
+        "consultationFocus": "",//重点咨询内容
         "contraceptionFeel": "",//目前避孕主要感受
         "contraceptionMethod": 0,//目前避孕方法
         "id": 0,

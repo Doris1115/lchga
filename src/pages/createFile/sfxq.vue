@@ -55,13 +55,14 @@
           <picker
             v-else-if="numData.includes(item.value)"
             mode="selector"
-            @change="bindPickerChange($event,item.value)"
             :value="form[item.value]"
             :range="pickRanges[item.value]"
             range-key="title"
+            @change="bindPickerChange($event,item.value)"
             :name="item.value"
-            :disabled="addBtn"
+            disabled
           >
+            <!-- :disabled="addBtn" -->
             <view
               class="input_btn"
               :class='{"placeholder":form[item.value]===""}'
@@ -233,6 +234,9 @@ export default {
     },
     formSubmit () {
       this.$refs.form.validate().then(res => {
+        uni.showLoading({
+          title: '正在添加',
+        })
         let openid = uni.getStorageSync('openid');
         let archivesId = uni.getStorageSync('archivesId');
         this.form.openid = openid
@@ -242,9 +246,7 @@ export default {
         if (this.type) {//新增
           addBehindFollow(this.url, params).then(res => {
             if (res.code == 200) {
-              uni.showToast({
-                title: res.message,
-              })
+              uni.hideLoading()
               setTimeout(() => {
                 uni.navigateTo({
                   url: `/pages/sfList/index?name=${this.form.name}&archivesId=${this.form.archivesId}`,

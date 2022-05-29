@@ -189,9 +189,13 @@ export default {
   },
   methods: {
     getLists () {
+      uni.showLoading({
+        title: '加载中'
+      });
       queryAllFollowList(this.url, {
         openid: uni.getStorageSync('openid')
       }).then(res => {
+        uni.hideLoading()
         this.coulums = []
         if (res.result.length > 0) {
 

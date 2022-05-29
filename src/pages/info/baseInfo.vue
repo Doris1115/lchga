@@ -272,6 +272,7 @@ export default {
               uni.showToast({
                 title: res.message,
               })
+              uni.setStorageSync('sex', this.form.sex);//性别 
               setTimeout(() => {
                 uni.switchTab({
                   url: '/pages/home/index'
@@ -283,6 +284,7 @@ export default {
           editWechatUserByOpenid(this.url, { ...params }).then(res => {
             this.loading = false;
             if (res.code == 200) {
+              uni.setStorageSync('sex', this.form.sex);//性别 
               uni.setStorageSync("birthday", params.birthday)
               uni.showToast({
                 title: res.message,

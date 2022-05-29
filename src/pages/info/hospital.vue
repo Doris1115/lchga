@@ -12,7 +12,7 @@
             @change="bindPickerChange($event,form)"
             :value="form"
             :range="list"
-            range-key="title"
+            range-key="text"
             name="form"
           >
             <view class="input_btn">

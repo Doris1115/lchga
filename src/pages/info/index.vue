@@ -11,7 +11,7 @@
       <view class="pull-left">
         <h1>{{name}}</h1>
         <p>
-          <span>{{sex?"男":"女"}}</span>
+          <span>{{sex!=='2'?"男":"女"}}</span>
         </p>
       </view>
     </view>
@@ -57,7 +57,8 @@ export default {
       imageUrl: wxInfo.headimgurl,
       name: wxInfo.nickname,
       types: [0, 1, 2],
-      sex: wxInfo.sex,
+      // sex: wxInfo.sex,
+      sex: uni.getStorageSync('sex'),//性别 
       coulums: [{
         title: "我的资料",
         icon: "/static/icons/wdxx.png",
