@@ -493,10 +493,8 @@ export default {
       // 获取到传过来的 省 市 区 县数据
       if (this.address == 'homeAddressDetail') {
         this.form.homeAddressCode = param.areaCode
-        // this.form.homeAddressCode = param.areaCode
       } else if (this.address == 'accountAddressDetail') {
         this.form.accountAddressCode = param.areaCode
-        // this.form.accountAddressCode = param.areaCode
       }
       this.form[this.address] = param.province + param.city + param.area + param.street
       this.popup = false;
