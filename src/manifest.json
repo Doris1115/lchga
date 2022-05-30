@@ -77,7 +77,8 @@
     "title": "流产后关爱",
     "publicPath": "./",
     "router": {
-      "base": "/lchga"
+      "base": "/lchga",
+      "mode": "history"
     },
     "devServer": {
       "https": false
