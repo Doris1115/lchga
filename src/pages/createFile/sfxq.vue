@@ -152,6 +152,8 @@ export default {
       this.form.followTime = this.pickRanges.followTime.findIndex(item => {
         return item == this.form.followTime
       })
+      this.form.name = option.name || uni.getStorageSync('name')
+      this.form.archivesId = option.archivesId || 0
     }
   },
   data () {

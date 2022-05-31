@@ -151,6 +151,8 @@ export default {
     this.addBtn = option.type == 3 ? true : false
     if (option.type == 0 || option.type == 3) {
       this.form = JSON.parse(decodeURIComponent(option.items));
+      this.form.name = option.name || uni.getStorageSync('name')
+      this.form.archivesId = option.archivesId || 0
     }
 
   },
